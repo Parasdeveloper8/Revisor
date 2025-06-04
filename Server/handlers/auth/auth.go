@@ -1,7 +1,10 @@
 package auth
 
 import (
+	"Revisor/db"
+	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -80,12 +83,46 @@ func Auth(c *gin.Context) {
 	}
 	defer resp.Body.Close()
 
-	var userInfo map[string]interface{}
-	err = json.NewDecoder(resp.Body).Decode(&userInfo)
+	//struct to contain user data
+	type UserInfo struct {
+		Email         string `json:"email"`
+		FamilyName    string `json:"family_name"`
+		GivenName     string `json:"given_name"`
+		Id            string `json:"id"`
+		Name          string `json:"name"`
+		Picture       string `json:"picture"`
+		VerifiedEmail bool   `json:"verified_email"`
+	}
+	var userInfo = &UserInfo{}
+	err = json.NewDecoder(resp.Body).Decode(userInfo)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode user info"})
 		log.Printf("Failed to decode user info %v\n", err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"user": userInfo})
+
+	//Store data in db once
+	//before storing data in db we have to confirm that duplicate data isn't stroed already
+	conn := db.GetDB()
+	query := "select name from revisor.user where email = ?"
+	result := conn.QueryRow(query, userInfo.Email)
+	var name string
+	err = result.Scan(&name)
+	if err == sql.ErrNoRows {
+		//store data in db
+		err := db.InsertUser(conn, userInfo.Email, userInfo.FamilyName, userInfo.GivenName, userInfo.Id, userInfo.Name, userInfo.Picture, userInfo.VerifiedEmail)
+		if err != nil {
+			log.Printf("Failed to insert user %v\n", err)
+			return
+		}
+		log.Println("User saved")
+		c.JSON(http.StatusOK, gin.H{"user": userInfo, "info": "User saved", "login": true})
+		return
+	} else if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Failed to scan row %v", err)})
+		log.Printf("Failed to scan row %v", err)
+		return
+	}
+	log.Println("user already exist")
+	c.JSON(http.StatusOK, gin.H{"user": userInfo, "info": "User already exists", "login": true})
 }
