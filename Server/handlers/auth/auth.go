@@ -15,7 +15,7 @@ import (
 )
 
 // This function extracts detail of logged-in user using token sent by frontend
-func Auth(c *gin.Context) {
+func Login(c *gin.Context) {
 	//Load env file
 	err := godotenv.Load()
 	if err != nil {
@@ -116,7 +116,7 @@ func Auth(c *gin.Context) {
 			return
 		}
 		log.Println("User saved")
-		c.JSON(http.StatusOK, gin.H{"user": userInfo, "info": "User saved"})
+		c.JSON(http.StatusOK, gin.H{"user": userInfo, "info": "User saved", "token": token})
 		return
 	} else if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Failed to scan row %v", err)})
@@ -124,5 +124,8 @@ func Auth(c *gin.Context) {
 		return
 	}
 	log.Println("user already exist")
-	c.JSON(http.StatusOK, gin.H{"user": gin.H{"name": userInfo.Name, "email": userInfo.Email}, "info": "User already exists"})
+	c.JSON(http.StatusOK, gin.H{"user": gin.H{"name": userInfo.Name, "email": userInfo.Email}, "info": "User already exists", "token": token})
 }
+
+// This function revokes token to mark user as logged out
+func Logout(c *gin.Context) {}

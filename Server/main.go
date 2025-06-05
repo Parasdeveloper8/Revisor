@@ -13,6 +13,6 @@ func main() {
 	//set up cors
 	cors.SetupCORS(r)
 
-	r.POST("/auth/google", auth.Auth)
+	r.POST("/auth/google", auth.Login)
 	r.Run(":8080")
 }
