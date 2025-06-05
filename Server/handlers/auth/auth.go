@@ -116,7 +116,7 @@ func Auth(c *gin.Context) {
 			return
 		}
 		log.Println("User saved")
-		c.JSON(http.StatusOK, gin.H{"user": userInfo, "info": "User saved", "login": true})
+		c.JSON(http.StatusOK, gin.H{"user": userInfo, "info": "User saved"})
 		return
 	} else if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Failed to scan row %v", err)})
@@ -124,5 +124,5 @@ func Auth(c *gin.Context) {
 		return
 	}
 	log.Println("user already exist")
-	c.JSON(http.StatusOK, gin.H{"user": gin.H{"name": userInfo.Name, "email": userInfo.Email}, "info": "User already exists", "login": true})
+	c.JSON(http.StatusOK, gin.H{"user": gin.H{"name": userInfo.Name, "email": userInfo.Email}, "info": "User already exists"})
 }
