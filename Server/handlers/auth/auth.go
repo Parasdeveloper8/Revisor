@@ -124,5 +124,5 @@ func Auth(c *gin.Context) {
 		return
 	}
 	log.Println("user already exist")
-	c.JSON(http.StatusOK, gin.H{"user": userInfo, "info": "User already exists", "login": true})
+	c.JSON(http.StatusOK, gin.H{"user": gin.H{"name": userInfo.Name, "email": userInfo.Email}, "info": "User already exists", "login": true})
 }
