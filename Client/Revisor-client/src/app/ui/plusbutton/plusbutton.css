@@ -1,0 +1,19 @@
+.plus-button {
+  background-color: black;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease-in-out;
+  float: right;
+}
+
+.plus-button:hover {
+  opacity: 0.8;
+}

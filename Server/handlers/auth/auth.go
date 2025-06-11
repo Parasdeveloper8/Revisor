@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -128,4 +130,48 @@ func Login(c *gin.Context) {
 }
 
 // This function revokes token to mark user as logged out
-func Logout(c *gin.Context) {}
+func Logout(c *gin.Context) {
+	//get token from json body
+	var Data struct {
+		Token string `json:"token"`
+	}
+	//bind json data to struct
+	err := c.ShouldBindJSON(&Data)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No token provided"})
+		log.Printf("No token provided %v\n", err)
+		return
+	}
+
+	//Let's revoke token by sending request to endpoint
+	endpoint := "https://oauth2.googleapis.com/revoke"
+	data := url.Values{}
+	data.Set("token", Data.Token)
+
+	req, err := http.NewRequest("POST", endpoint, strings.NewReader(data.Encode()))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to create http request %v\n", err)})
+		log.Printf("Failed to create http request %v\n", err)
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to send http request %v\n", err)})
+		log.Printf("Failed to send request %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to revoke token .Status : %s\n", resp.Status)})
+		fmt.Printf("Failed to revoke token. Status: %s\n", resp.Status)
+		fmt.Println(Data.Token)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"info": "Token successfully revoked . User logged out"})
+	fmt.Println("Token successfully revoked.")
+}

@@ -14,5 +14,7 @@ func main() {
 	cors.SetupCORS(r)
 
 	r.POST("/auth/google", auth.Login)
+	r.POST("/auth/logout", auth.Logout)
+
 	r.Run(":8080")
 }
