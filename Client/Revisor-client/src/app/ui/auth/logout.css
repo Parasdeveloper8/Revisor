@@ -1,6 +1,6 @@
 .logout-btn{
         padding: 10px 20px;
-        background-color: #4285F4;
+        background-color: black;
         color: white;
         border: none;
         border-radius: 5px;
@@ -9,4 +9,5 @@
         display: flex;
         align-items: center;
         gap: 8px;
+        margin-top:5px;
 }
