@@ -1,0 +1,23 @@
+.success-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e6ffed;
+    color: #2e7d32;
+    padding: 12px 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', sans-serif;
+    gap: 10px;
+    width: fit-content;
+    margin: 10px auto;
+}
+
+.tick {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.message {
+    font-size: 18px;
+}
