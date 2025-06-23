@@ -11,25 +11,21 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 )
 
 // This function extracts detail of logged-in user using token sent by frontend
 func Login(c *gin.Context) {
-	//Load env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	session := sessions.Default(c)
 
 	//get code from json body
 	var Data struct {
 		Code string `json:"code"`
 	}
 	//bind json data to struct
-	err = c.ShouldBindJSON(&Data)
+	err := c.ShouldBindJSON(&Data)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No code provided"})
 		log.Printf("No code provided %v\n", err)
@@ -104,7 +100,7 @@ func Login(c *gin.Context) {
 	}
 
 	//Store data in db once
-	//before storing data in db we have to confirm that duplicate data isn't stroed already
+	//before storing data in db we have to confirm that duplicate data isn't stored already
 	conn := db.GetDB()
 	query := "select name from revisor.user where email = ?"
 	result := conn.QueryRow(query, userInfo.Email)
@@ -119,6 +115,8 @@ func Login(c *gin.Context) {
 		}
 		log.Println("User saved")
 		c.JSON(http.StatusOK, gin.H{"user": userInfo, "info": "User saved", "token": token})
+		session.Set("email", userInfo.Email)
+		session.Save()
 		return
 	} else if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Failed to scan row %v", err)})
@@ -126,11 +124,15 @@ func Login(c *gin.Context) {
 		return
 	}
 	log.Println("user already exist")
+	session.Set("email", userInfo.Email)
+	session.Save()
 	c.JSON(http.StatusOK, gin.H{"user": gin.H{"name": userInfo.Name, "email": userInfo.Email}, "info": "User already exists", "token": token})
 }
 
 // This function revokes token to mark user as logged out
 func Logout(c *gin.Context) {
+	session := sessions.Default(c)
+
 	//get token from json body
 	var Data struct {
 		Token string `json:"token"`
@@ -172,6 +174,8 @@ func Logout(c *gin.Context) {
 		fmt.Println(Data.Token)
 		return
 	}
+	session.Clear()
+	session.Save()
 	c.JSON(http.StatusOK, gin.H{"info": "Token successfully revoked . User logged out"})
 	fmt.Println("Token successfully revoked.")
 }

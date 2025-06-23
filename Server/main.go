@@ -3,8 +3,14 @@ package main
 import (
 	"Revisor/cors"
 	"Revisor/handlers/auth"
+	"Revisor/handlers/flashcard"
+	"log"
+	"os"
 
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -13,8 +19,23 @@ func main() {
 	//set up cors
 	cors.SetupCORS(r)
 
+	//Load env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	store := cookie.NewStore([]byte(os.Getenv("SECRET_KEY")))
+	store.Options(sessions.Options{
+		Path:     "/",
+		MaxAge:   3600,  // 1 hour
+		HttpOnly: true,  // 🔒 Prevent frontend access
+		Secure:   false, // Set to true in production with HTTPS
+	})
+	r.Use(sessions.Sessions("RevisorSession", store))
+
 	r.POST("/auth/google", auth.Login)
 	r.POST("/auth/logout", auth.Logout)
-
+	r.POST("/flashcard/store/data", flashcard.StoreFlashcardData)
 	r.Run(":8080")
 }
