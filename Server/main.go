@@ -5,6 +5,7 @@ import (
 	"Revisor/handlers/auth"
 	"Revisor/handlers/flashcard"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/gin-contrib/sessions"
@@ -31,6 +32,7 @@ func main() {
 		MaxAge:   3600,  // 1 hour
 		HttpOnly: true,  // 🔒 Prevent frontend access
 		Secure:   false, // Set to true in production with HTTPS
+		SameSite: http.SameSiteLaxMode,
 	})
 	r.Use(sessions.Sessions("RevisorSession", store))
 

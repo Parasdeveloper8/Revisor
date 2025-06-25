@@ -14,6 +14,7 @@ const LandingPage = () =>{
   if (code) {
     fetch('http://localhost:8080/auth/google', {
       method: 'POST',
+      credentials: "include",
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ "code":code }),
     })

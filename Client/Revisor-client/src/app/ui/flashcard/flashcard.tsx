@@ -36,6 +36,27 @@ const FlashCard: React.FC<FlashCardProps> = ({ close }) => {
     )
     );}
     console.log(flashCardData);
+
+    //send Data to backend
+    const sendFlashCardData = (e:React.FormEvent)=>{
+          e.preventDefault();
+          setIsCreated(true);
+          //POST API to send data
+          const api:string = "http://localhost:8080/flashcard/store/data";
+          fetch(api,{
+            method:'POST',
+            credentials: "include",
+            headers:{ 'Content-Type': 'application/json' },
+            body: JSON.stringify({"topic":topic,"flashdata":flashCardData})
+          })
+          .then(response =>{
+            if(response.ok){
+                console.log("request success");
+            }})
+          .catch(error =>{
+            console.error("Failed to make request to /flashcard/store/data : ",error);
+          })
+    }
     return (
         <div className="flashcard">
             <button onClick={close} className="close-btn" aria-label="Close">✕</button>
@@ -44,7 +65,7 @@ const FlashCard: React.FC<FlashCardProps> = ({ close }) => {
             ) : (
             <div className="flashcard-content">
                 <h2 className="title">Create Flashcard</h2>
-                <form onSubmit={(e)=>{e.preventDefault();setIsCreated(true)}}>
+                <form onSubmit={sendFlashCardData}>
                 <label>
                     <span>Topic Name</span>
                     <input type="text" placeholder='Ex:= Nationalism in India' value={topic} onChange={e => setTopic(e.target.value)}/>

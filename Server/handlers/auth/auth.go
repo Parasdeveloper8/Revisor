@@ -114,9 +114,14 @@ func Login(c *gin.Context) {
 			return
 		}
 		log.Println("User saved")
-		c.JSON(http.StatusOK, gin.H{"user": userInfo, "info": "User saved", "token": token})
+		//log.Println(userInfo.Email) //debugging line
 		session.Set("email", userInfo.Email)
-		session.Save()
+		if err := session.Save(); err != nil {
+			log.Printf("Failed to save session: %v\n", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not save session"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"user": userInfo, "info": "User saved", "token": token})
 		return
 	} else if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Failed to scan row %v", err)})
@@ -124,8 +129,13 @@ func Login(c *gin.Context) {
 		return
 	}
 	log.Println("user already exist")
+	//log.Println(userInfo.Email) //debugging line
 	session.Set("email", userInfo.Email)
-	session.Save()
+	if err := session.Save(); err != nil {
+		log.Printf("Failed to save session: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not save session"})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"user": gin.H{"name": userInfo.Name, "email": userInfo.Email}, "info": "User already exists", "token": token})
 }
 
@@ -175,7 +185,11 @@ func Logout(c *gin.Context) {
 		return
 	}
 	session.Clear()
-	session.Save()
+	if err := session.Save(); err != nil {
+		log.Printf("Failed to save session: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not save session"})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"info": "Token successfully revoked . User logged out"})
 	fmt.Println("Token successfully revoked.")
 }

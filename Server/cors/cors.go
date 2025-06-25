@@ -10,7 +10,7 @@ import (
 // Cors configurations
 func SetupCORS(r *gin.Engine) {
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"}, // Replace with specific origins in production
+		AllowOrigins:     []string{"http://localhost:5173"}, // Replace with specific origins in production
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
