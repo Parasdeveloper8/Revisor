@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -70,6 +71,10 @@ func Login(c *gin.Context) {
 		log.Printf("Failed to exchange code %v\n", err)
 		return
 	}
+	//expiry of token
+	tokenExpiry := token.Expiry.Format(time.RFC3339)
+	//This will tell frontend to start a timer
+	//After the time completes(token expires) it will mark user as logged out
 
 	//fetch user info using token
 	client := OauthConfig.Client(c, token)
@@ -121,7 +126,7 @@ func Login(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not save session"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"user": userInfo, "info": "User saved", "token": token})
+		c.JSON(http.StatusOK, gin.H{"user": userInfo, "info": "User saved", "token": token.AccessToken, "tokenExpiresAt": tokenExpiry})
 		return
 	} else if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Failed to scan row %v", err)})
@@ -136,7 +141,7 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not save session"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"user": gin.H{"name": userInfo.Name, "email": userInfo.Email}, "info": "User already exists", "token": token})
+	c.JSON(http.StatusOK, gin.H{"user": gin.H{"name": userInfo.Name, "email": userInfo.Email}, "info": "User already exists", "token": token.AccessToken, "tokenExpiresAt": tokenExpiry})
 }
 
 // This function revokes token to mark user as logged out

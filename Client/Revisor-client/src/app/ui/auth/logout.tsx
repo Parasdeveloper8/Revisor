@@ -18,9 +18,7 @@ const Logout = ()=>{
          .then(response =>{
             if(response.ok){
                //remove data from local storage
-               localStorage.removeItem("name");
-               localStorage.removeItem("email");
-               localStorage.removeItem("token");
+               localStorage.clear();
                setEmail('');
                console.log("Logged out");
             }
