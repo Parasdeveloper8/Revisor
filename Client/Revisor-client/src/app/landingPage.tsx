@@ -27,11 +27,17 @@ const LandingPage = () =>{
         localStorage.setItem("tokenExpiry",data.tokenExpiresAt);
         setEmail(data.user.email);
         console.log("User login successful");
+      })
+      .catch((error)=>{
+        console.error("Failed to make post request to auth/google : ",error);
+      })
+    }
         //Now a timer will be started
         //This will trigger auto logout when the token expires
         const tokenExpiresAt = new Date((localStorage.getItem("tokenExpiry") as string)).getTime();
         const now = Date.now();
         const expiresInMs = tokenExpiresAt - now;
+        //console.log(expiresInMs);
         if (expiresInMs > 0){
           setTimeout(()=>{
               //remove data from local storage
@@ -40,11 +46,6 @@ const LandingPage = () =>{
                console.log("Token expired and you are marked as Logged out");
           },expiresInMs);
         }
-      })
-      .catch((error)=>{
-        console.error("Failed to make post request to auth/google : ",error);
-      })
-    }
 }, []);
 
     return (
