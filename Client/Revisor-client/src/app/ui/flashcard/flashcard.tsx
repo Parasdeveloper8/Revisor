@@ -9,12 +9,17 @@ type FlashCardData = {
     heading:string;
     value:string;
 }
-
+//Type to contain messages(success or error) 
+type FlashMsg = {
+     type:'error' | 'success';
+     message:string;
+}
 const FlashCard: React.FC<FlashCardProps> = ({ close }) => {
    // const [numberOfFields, setNumberOfFields] = useState<number[]>([1]);
     const [flashCardData,setFlashCardData] = useState<FlashCardData[]>([{heading:'',value:''}]);
     const [topic,setTopic] = useState<string>('');
-    const [isCreated,setIsCreated] = useState<boolean>(false); //State to show flashcard is created or not
+    //This state stores error if any error occurs and if not then stores success message
+    const [flashMsg,setFlashMsg] = useState<FlashMsg | null>(null); 
 
     const addField = () => {
         //setNumberOfFields((prev) => [...prev, prev.length + 1]);
@@ -40,7 +45,6 @@ const FlashCard: React.FC<FlashCardProps> = ({ close }) => {
     //send Data to backend
     const sendFlashCardData = (e:React.FormEvent)=>{
           e.preventDefault();
-          setIsCreated(true);
           //POST API to send data
           const api:string = "http://localhost:8080/flashcard/store/data";
           fetch(api,{
@@ -49,10 +53,16 @@ const FlashCard: React.FC<FlashCardProps> = ({ close }) => {
             headers:{ 'Content-Type': 'application/json' },
             body: JSON.stringify({"topic":topic,"flashdata":flashCardData})
           })
-          .then(response =>{
+          .then(async (response)=>{
             if(response.ok){
                 console.log("request success");
-            }})
+                setFlashMsg({type:"success",message:"Flashcard created"});
+            }else{
+                const failMsg =await response.json();
+                setFlashMsg({type:"error",message:failMsg.info || failMsg.message || "something went wrong"});
+            }
+        }
+        )
           .catch(error =>{
             console.error("Failed to make request to /flashcard/store/data : ",error);
           })
@@ -60,8 +70,8 @@ const FlashCard: React.FC<FlashCardProps> = ({ close }) => {
     return (
         <div className="flashcard">
             <button onClick={close} className="close-btn" aria-label="Close">✕</button>
-            {isCreated ? (
-                <SuccessTick message='Flashcard created'/>
+            {flashMsg? (
+                <SuccessTick message={flashMsg.message} color={flashMsg.type == "error" ? "red" : "green"}/>
             ) : (
             <div className="flashcard-content">
                 <h2 className="title">Create Flashcard</h2>
