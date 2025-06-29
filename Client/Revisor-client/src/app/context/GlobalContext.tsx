@@ -1,9 +1,18 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 
-// Define only the global state shape
 interface GlobalState {
+  name: string;
   email: string;
-  setEmail: React.Dispatch<React.SetStateAction<string>>;
+  token: string;
+  tokenExpiry: Date;
+  setUserData: React.Dispatch<React.SetStateAction<UserData>>;
+}
+
+interface UserData {
+  name: string;
+  email: string;
+  token: string;
+  tokenExpiry: Date;
 }
 
 // Create the context
@@ -16,16 +25,15 @@ interface GlobalProviderProps {
 
 // Create the provider component
 export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
-  const [email, setEmail] = useState(() => {
-    // Load email from localStorage when component mounts
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('email') || '';
-    }
-    return '';
+  const [userData, setUserData] = useState<UserData>({
+    name: '',
+    email: '',
+    token: '',
+    tokenExpiry: new Date(0),
   });
 
   return (
-    <GlobalContext.Provider value={{ email, setEmail }}>
+    <GlobalContext.Provider value={{ ...userData, setUserData }}>
       {children}
     </GlobalContext.Provider>
   );

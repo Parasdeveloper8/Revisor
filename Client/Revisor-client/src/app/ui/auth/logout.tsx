@@ -4,11 +4,10 @@ import "./logout.css";
 
 const Logout = ()=>{
   // console.log(localStorage.getItem("token"));
-    const {setEmail} = useGlobalContext(); //Set empty value to global email state
+    const {setUserData,token} = useGlobalContext(); //Set empty value to global email state
 
     //function to logout user
     const handleLogout = () =>{
-         const token = localStorage.getItem("token");
          fetch('http://localhost:8080/auth/logout',{
           method: 'POST',
           credentials: "include",
@@ -17,9 +16,7 @@ const Logout = ()=>{
          })
          .then(response =>{
             if(response.ok){
-               //remove data from local storage
-               localStorage.clear();
-               setEmail('');
+                setUserData({name:'',email:'',token:'',tokenExpiry:new Date});
                console.log("Logged out");
             }
          })
