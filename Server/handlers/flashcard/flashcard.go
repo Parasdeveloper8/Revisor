@@ -76,3 +76,30 @@ func StoreFlashcardData(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"info": "FlashCard Data has been stored in database"})
 	log.Println("FlashCard Data has been stored in database")
 }
+
+// this function sends flashcard data to frontend
+func SendFlashCardData(c *gin.Context) {
+	session := sessions.Default(c)
+	sessionEmail := session.Get("email")
+	//To prevent panic we are using , ok syntax
+	email, ok := sessionEmail.(string)
+	if !ok || email == "" {
+		log.Println("Email in session is empty.User is not logged in")
+		fmt.Println(email)
+		c.JSON(http.StatusUnauthorized, gin.H{"info": "You have to Login first to create flashcard"})
+		return
+	}
+
+	//create a db connection
+	conn := db.GetDB()
+	//fetch data->
+	var flashCardData []db.FlashCardData
+	flashCardData, err := db.FetchFlashCardData(conn, email)
+	if err != nil {
+		log.Printf("Error in fetching flashcard data %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error in fetching flashcard data %v", err)})
+		return
+	}
+	log.Println("flashcard Data sent")
+	c.JSON(http.StatusOK, gin.H{"flashCardData": flashCardData})
+}

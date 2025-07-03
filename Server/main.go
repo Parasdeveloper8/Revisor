@@ -39,5 +39,6 @@ func main() {
 	r.POST("/auth/google", auth.Login)
 	r.POST("/auth/logout", auth.Logout)
 	r.POST("/flashcard/store/data", flashcard.StoreFlashcardData)
+	r.GET("/flashcard/get/data", flashcard.SendFlashCardData)
 	r.Run(":8080")
 }
