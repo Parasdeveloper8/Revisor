@@ -1,4 +1,4 @@
-import NavBar from "../header/navbar";
+import NavBar from "./header/navbar";
 import { useGlobalContext } from "./context/GlobalContext";
 import Footer from "./footer/footer";
 import Main from "./main/main";
@@ -32,6 +32,26 @@ const LandingPage = () =>{
       })
       .catch((error)=>{
         console.error("Failed to make post request to auth/google : ",error);
+        //send request to /auth/me
+        fetch('http://localhost:8080/auth/me', {
+         method: 'GET',
+         credentials: "include",
+        })
+         .then(res => res.json())
+         .then(data => {
+        const userData = {
+           name: data.user.name,
+           email: data.user.email,
+           token: data.token,
+           tokenExpiry: new Date(data.tokenExpiresAt), // convert to Date
+        };
+        setUserData(userData);
+        console.log("User login successful");
+        })
+        .catch((error)=>{
+           setUserData({name:'',email:'',token:'',tokenExpiry:new Date});
+           console.log(" you are marked as Logged out",error);
+        });
       })
     }
           //function to handle logout

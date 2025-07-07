@@ -2,6 +2,7 @@ package auth
 
 import (
 	"Revisor/db"
+	"Revisor/reusable"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -19,8 +20,6 @@ import (
 
 // This function extracts detail of logged-in user using token sent by frontend
 func Login(c *gin.Context) {
-	session := sessions.Default(c)
-
 	//get code from json body
 	var Data struct {
 		Code string `json:"code"`
@@ -111,6 +110,15 @@ func Login(c *gin.Context) {
 	result := conn.QueryRow(query, userInfo.Email)
 	var name string
 	err = result.Scan(&name)
+
+	//prepare data to store in session
+	sessionData := []reusable.SessionKeyValue{
+		{Key: "name", Value: userInfo.Name},
+		{Key: "email", Value: userInfo.Email},
+		{Key: "token", Value: token.AccessToken},
+		{Key: "tokenExpiresAt", Value: tokenExpiry},
+	}
+
 	if err == sql.ErrNoRows {
 		//store data in db
 		err := db.InsertUser(conn, userInfo.Email, userInfo.FamilyName, userInfo.GivenName, userInfo.Id, userInfo.Name, userInfo.Picture, userInfo.VerifiedEmail)
@@ -120,10 +128,9 @@ func Login(c *gin.Context) {
 		}
 		log.Println("User saved")
 		//log.Println(userInfo.Email) //debugging line
-		session.Set("email", userInfo.Email)
-		if err := session.Save(); err != nil {
-			log.Printf("Failed to save session: %v\n", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not save session"})
+		err = reusable.SessionSet(c, sessionData)
+		if err != nil {
+			log.Printf("Failed to save session %v", err)
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"user": userInfo, "info": "User saved", "token": token.AccessToken, "tokenExpiresAt": tokenExpiry})
@@ -135,10 +142,9 @@ func Login(c *gin.Context) {
 	}
 	log.Println("user already exist")
 	//log.Println(userInfo.Email) //debugging line
-	session.Set("email", userInfo.Email)
-	if err := session.Save(); err != nil {
-		log.Printf("Failed to save session: %v\n", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not save session"})
+	err = reusable.SessionSet(c, sessionData)
+	if err != nil {
+		log.Printf("Failed to save session %v", err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"user": gin.H{"name": userInfo.Name, "email": userInfo.Email}, "info": "User already exists", "token": token.AccessToken, "tokenExpiresAt": tokenExpiry})
@@ -197,4 +203,27 @@ func Logout(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"info": "Token successfully revoked . User logged out"})
 	fmt.Println("Token successfully revoked.")
+}
+
+// This function sends user's data from session if session has data
+func Me(c *gin.Context) {
+	//fetch all data from session
+	session := sessions.Default(c)
+	sessionName := session.Get("name")
+	sessionEmail := session.Get("email")
+	sessionToken := session.Get("token")
+	sessionTokenExpiresAt := session.Get("tokenExpiresAt")
+
+	//To prevent panic we are using , ok syntax
+	email, ok1 := sessionEmail.(string)
+	name, ok2 := sessionName.(string)
+	token, ok3 := sessionToken.(string)
+	tokenExpiresAt, ok4 := sessionTokenExpiresAt.(string)
+	if (!ok1 || email == "") || (!ok2 || name == "") || (!ok3 || token == "") || (!ok4 || tokenExpiresAt == "") {
+		log.Println("Session is empty.User is not logged in")
+		c.JSON(http.StatusUnauthorized, gin.H{"info": "You have to Login first"})
+		return
+	}
+	log.Println("Data has been sent...")
+	c.JSON(http.StatusOK, gin.H{"user": gin.H{"name": name, "email": email}, "token": token, "tokenExpiresAt": tokenExpiresAt})
 }

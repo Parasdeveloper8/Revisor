@@ -1,6 +1,6 @@
-import { useGlobalContext } from "../app/context/GlobalContext";
-import GoogleAuth from "../app/ui/auth/googleAuth";
-import Logout from "../app/ui/auth/logout";
+import { useGlobalContext } from "../context/GlobalContext";
+import GoogleAuth from "../ui/auth/googleAuth";
+import Logout from "../ui/auth/logout";
 import "./navbar.css";
 interface NavbarProps {
   logoUrl: string;
