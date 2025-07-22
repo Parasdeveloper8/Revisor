@@ -1,0 +1,108 @@
+/* SavedFlashCards.css */
+
+body {
+  background-color: #f2f2f2;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.flashcards-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  background: white;
+  border: 1px solid #ccc;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.flashcards-container h2 {
+  text-align: center;
+  color: #000;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid black;
+  padding-bottom: 5px;
+}
+
+.flashcards-container button {
+  background-color: black;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: background-color 0.3s;
+}
+
+.flashcards-container button:hover {
+  background-color: #333;
+}
+
+.flashcard-item {
+  border: 1px solid #aaa;
+  padding: 15px;
+  margin-bottom: 20px;
+  background: #f9f9f9;
+}
+
+.flashcard-item h3 {
+  color: #111;
+  margin-bottom: 5px;
+}
+
+.flashcard-item p {
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.flashcard-data {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.flashcard-data strong {
+  display: inline-block;
+  width: 120px;
+  color: #000;
+}
+
+hr {
+  border-top: 1px solid #ccc;
+}
+
+.flashcard-row {
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 8px;
+}
+
+.flashcard-heading {
+  flex: 1 1 40%;
+  font-weight: bold;
+  color: #000;
+  font-size: 15px;
+}
+
+.flashcard-value {
+  flex: 1 1 60%;
+  color: #333;
+  font-size: 15px;
+}
+
+.generate-btn {
+  background-color: white;
+  color: black;
+  border: 2px solid black;
+  padding: 8px 12px;
+  margin-top: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.generate-btn:hover {
+  background-color: black;
+  color: white;
+}

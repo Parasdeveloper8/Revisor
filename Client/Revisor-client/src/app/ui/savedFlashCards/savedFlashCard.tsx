@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react"
-//type to hold data
+import { useEffect, useState } from "react";
+import "./savedFlashCard.css";
+// type to hold each flashcard item
 type FlashCardItem = {
   Email: string;
   TopicName: string;
@@ -10,44 +11,70 @@ type FlashCardItem = {
     Value: string;
   }[];
 };
-const SavedFlashCards = () =>{
-  const [flashCardItems , setFlashCardItems] = useState<FlashCardItem[]>([]);
-  //Fetch all saved flashcards' data
-   useEffect(()=>{
-      fetch("http://localhost:8080/flashcard/get/data",{
-        method:"GET",
-        credentials : "include",
+
+// full API response
+type FlashCardApiResponse = {
+ flashCardData: FlashCardItem[];
+};
+
+const SavedFlashCards = () => {
+  const [flashCardItems, setFlashCardItems] = useState<FlashCardItem[]>([]);
+  const [fetched,setFetched] = useState<boolean>(false);
+
+  // Fetch all saved flashcards' data
+  useEffect(() => {
+    fetch("http://localhost:8080/flashcard/get/data", {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data: FlashCardApiResponse) => {
+        console.log("Fetched flashcards:", data);
+        setFlashCardItems(data.flashCardData); // ✅ correct key
+        setFetched(true);
       })
-      .then(res => res.json())
-      .then((data:FlashCardItem[]) => {
-        //set data in state
-         setFlashCardItems(data);
-      })
-   },[]);
-     return(
-         //render cards
-          <div>
-      <h2>Saved Flashcards</h2>
-      <p>{flashCardItems.length}</p>
-      { /*
-      {flashCardItems.length === 0 ? (
-        <p>No flashcards found.</p>
-      ) : (
-        flashCardItems.map((item, index) => (
-          <div key={index}>
-            <h3>{item.TopicName}</h3>
-            <p>{item.FormattedTime}</p>
-            {item.Data.map((card, i) => (
-              <div key={i}>
-                <strong>{card.Heading}</strong>: {card.Value}
-              </div>
-            ))}
-            <hr />
-          </div>
-        ))
-      )}
-      */}
-    </div> 
-    )
-}
-export default SavedFlashCards
+      .catch((err) => {
+        console.error("Failed to fetch flashcards:", err);
+        setFetched(true);
+      });
+  }, []);
+
+  return (
+  <div className="flashcards-container">
+    <h2>Saved Flashcards</h2>
+    <button onClick={() => (location.href = "/")}>Home</button>
+    {!fetched ? (
+      <p>Loading...</p>
+    ) : !Array.isArray(flashCardItems) ? (
+      <p>Data format error.</p>
+    ) : flashCardItems.length === 0 ? (
+      <p>No flashcards found.</p>
+    ) : (
+      flashCardItems.map((item, index) => (
+        <div key={index} className="flashcard-item">
+          <h3>{item.TopicName}</h3>
+          <p>{item.FormattedTime}</p>
+          <div className="flashcard-data">
+          {item.Data.map((card, i) => (
+          <div key={i} className="flashcard-row">
+          <div className="flashcard-heading">{card.Heading}</div>
+          <div className="flashcard-value">{card.Value}</div>
+        </div>
+  ))}
+      </div>
+        <button
+      className="generate-btn"
+      onClick={() => alert(`Generate quiz for topic: ${item.TopicName}`)}
+    >
+      Generate Quiz
+    </button>
+          <hr />
+        </div>
+      ))
+    )}
+  </div>
+);
+
+};
+
+export default SavedFlashCards;
