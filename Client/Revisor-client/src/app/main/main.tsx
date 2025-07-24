@@ -10,7 +10,7 @@ const Main = () => {
         <>
         {/*Component to add flash card*/}
         <PlusButton titleText="Add flash card" onClick={()=>setshowFlashCard(true)}/>
-            <button onClick={()=>location.href = "/saved/falshcards"}>Your saved flashcards</button>
+        <button onClick={()=>location.href = "/saved/flashcards"} className="ysf-btn">Your saved flashcards</button>
         {showFlashCard && <FlashCard close={()=>setshowFlashCard(false)}/>}
         </>
     )

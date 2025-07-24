@@ -1,7 +1,10 @@
+import "./footer.css";
 const Footer = () =>{
     return (
         <>
-        <p>@Parasdeveloper8</p>
+        <div className="main-container">
+           <p className="developer">@Parasdeveloper8</p>
+        </div>
         </>
     )
 }

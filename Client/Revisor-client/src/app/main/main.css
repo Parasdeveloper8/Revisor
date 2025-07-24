@@ -1,0 +1,8 @@
+.ysf-btn{
+   margin-top: 2%;
+   border: 1px solid black;
+   box-shadow: 5px 5px black;
+   &:hover{
+    box-shadow: 3px 3px black;
+   }
+}
