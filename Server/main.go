@@ -4,6 +4,7 @@ import (
 	"Revisor/cors"
 	"Revisor/handlers/auth"
 	"Revisor/handlers/flashcard"
+	"Revisor/handlers/quiz"
 	"log"
 	"net/http"
 	"os"
@@ -41,5 +42,6 @@ func main() {
 	r.GET("/auth/me", auth.Me)
 	r.POST("/flashcard/store/data", flashcard.StoreFlashcardData)
 	r.GET("/flashcard/get/data", flashcard.SendFlashCardData)
+	r.POST("/generate/quiz", quiz.GenerateQuiz)
 	r.Run(":8080")
 }

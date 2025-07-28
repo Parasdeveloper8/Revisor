@@ -1,0 +1,102 @@
+package quiz
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+// This function generates quiz using sonar model
+// Data is received from frontend
+// This will send quiz back to frontend
+func GenerateQuiz(c *gin.Context) {
+	apiKey := os.Getenv("PERPLEXITY_API_KEY")
+	if apiKey == "" {
+		log.Printf("Empty PERPLEXITY_API_KEY in .env file")
+		return
+	}
+
+	type Data struct {
+		Heading string `json:"Heading"`
+		Value   string `json:"Value"`
+	}
+	//struct to hold frontend received data
+	var ReceivedData struct {
+		TopicName string `json:"topicName"`
+		Notes     []Data `json:"data"`
+	}
+	//Bind json data to ReceivedData
+	err := c.ShouldBindJSON(&ReceivedData)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No JSON data provided or incomplete data provided"})
+		log.Printf("No JSON data provided or incomplete data provided %v\n", err)
+		return
+	}
+	//Send data to model and get quiz data
+	url := "https://api.perplexity.ai/chat/completions"
+	//Convert notes into a readable string
+	var notesBuilder strings.Builder
+	for _, note := range ReceivedData.Notes {
+		notesBuilder.WriteString(fmt.Sprintf("Heading: %s\nValue: %s\n\n", note.Heading, note.Value))
+	}
+	noteContent := notesBuilder.String()
+
+	//Create request payload
+	requestPayload := map[string]interface{}{
+		"model": "sonar",
+		"messages": []map[string]string{
+			{
+				"role":    "system",
+				"content": "You are a quiz generator. Generate quiz questions based on the data provided by the user. Don't give answers.",
+			},
+			{
+				"role":    "user",
+				"content": "Here is the data:\n\n" + noteContent,
+			},
+		},
+	}
+
+	//Convert payload to JSON
+	jsonBody, err := json.Marshal(requestPayload)
+	if err != nil {
+		log.Printf("Failed to marshal JSON payload: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal error while preparing request"})
+		return
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(jsonBody)))
+	if err != nil {
+		log.Printf("Failed to build HTTP request : %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to build HTTP request"})
+		return
+	}
+	authHeaderValue := "Bearer " + apiKey //value of Authorization header
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", authHeaderValue)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("Failed to send HTTP request %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send HTTP request"})
+		return
+	}
+	defer resp.Body.Close()
+
+	// Read body
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("Failed to read response body: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read response body"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"response": string(respBody), "topic": ReceivedData.TopicName})
+}
