@@ -5,6 +5,7 @@ import (
 	"Revisor/handlers/auth"
 	"Revisor/handlers/flashcard"
 	"Revisor/handlers/quiz"
+	"Revisor/middleware"
 	"log"
 	"net/http"
 	"os"
@@ -38,10 +39,10 @@ func main() {
 	r.Use(sessions.Sessions("RevisorSession", store))
 
 	r.POST("/auth/google", auth.Login)
-	r.POST("/auth/logout", auth.Logout)
-	r.GET("/auth/me", auth.Me)
-	r.POST("/flashcard/store/data", flashcard.StoreFlashcardData)
-	r.GET("/flashcard/get/data", flashcard.SendFlashCardData)
-	r.POST("/generate/quiz", quiz.GenerateQuiz)
+	r.POST("/auth/logout", middleware.CheckISAuthenticated(), auth.Logout)
+	r.GET("/auth/me", middleware.CheckISAuthenticated(), auth.Me)
+	r.POST("/flashcard/store/data", middleware.CheckISAuthenticated(), flashcard.StoreFlashcardData)
+	r.GET("/flashcard/get/data", middleware.CheckISAuthenticated(), flashcard.SendFlashCardData)
+	r.POST("/generate/quiz", middleware.CheckISAuthenticated(), quiz.GenerateQuiz)
 	r.Run(":8080")
 }
