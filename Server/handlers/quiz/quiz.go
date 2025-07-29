@@ -97,6 +97,20 @@ func GenerateQuiz(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read response body"})
 		return
 	}
-
-	c.JSON(http.StatusOK, gin.H{"response": string(respBody), "topic": ReceivedData.TopicName})
+	//struct to hold response from model
+	type ModelResponse struct {
+		Choices []struct {
+			Message struct {
+				Content string
+			}
+		}
+	}
+	modelRes := &ModelResponse{}
+	err = json.Unmarshal(respBody, &modelRes)
+	if err != nil {
+		log.Printf("Failed to unmarshal %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error from Server"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"response": modelRes, "topic": ReceivedData.TopicName})
 }
