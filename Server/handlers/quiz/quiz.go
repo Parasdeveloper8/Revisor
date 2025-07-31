@@ -53,8 +53,16 @@ func GenerateQuiz(c *gin.Context) {
 		"model": "sonar",
 		"messages": []map[string]string{
 			{
-				"role":    "system",
-				"content": "You are a quiz generator. Generate quiz questions based on the data provided by the user. Don't give answers.",
+				"role": "system",
+				"content": `
+				You are a quiz generator. 
+				Generate quiz questions based on the data provided by the user from the given notes.
+				 Don't give answers.
+				 Don't generate facts.
+				 Questions must not be from outside of given notes.
+				 Generate questions from data as provided whether data is less or much.
+				 Example if data contains only some lines then questions must be based on given lines.
+				 You have to treat as a teacher who asks question from notebook like from NCERT not from google.`,
 			},
 			{
 				"role":    "user",
