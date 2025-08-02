@@ -32,7 +32,11 @@ const LandingPage = () =>{
       })
       .catch((error)=>{
         console.error("Failed to make post request to auth/google : ",error);
-        //send request to /auth/me
+      })
+    }
+         
+    if(!code){
+       //send request to /auth/me
         fetch('http://localhost:8080/auth/me', {
          method: 'GET',
          credentials: "include",
@@ -50,9 +54,8 @@ const LandingPage = () =>{
         })
         .catch((error)=>{
            setUserData({name:'',email:'',token:'',tokenExpiry:new Date});
-           console.log(" you are marked as Logged out",error);
+           console.log("Failed to make post request to auth/me : ",error);
         });
-      })
     }
           //function to handle logout
          const handleLogout = ()=>{
