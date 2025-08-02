@@ -17,6 +17,40 @@ type FlashCardApiResponse = {
  flashCardData: FlashCardItem[];
 };
 
+
+//type to hold /generate/quiz response data
+type QuizQuesData = {
+   Choices : {
+         Message : {
+            Content : string;
+         };
+      }[];
+    }
+
+type BackendResWrapper = {
+  response: QuizQuesData;
+  topic: string;
+};
+//This function sends data which has to be converted into quiz to backend
+const generateQuiz = (topicName:FlashCardItem["TopicName"],data:FlashCardItem["Data"])=>{
+     const api:string = "http://localhost:8080/generate/quiz";
+     fetch(api,{
+      method:'POST',
+      credentials:'include',
+      headers:{ 'Content-Type': 'application/json' },
+      body:JSON.stringify({"topicName":topicName,"data":data}),
+     })
+     .then(response=>response.json())
+     .then((data :BackendResWrapper) => {
+          console.log(data);
+          //move user to separate quiz page
+          location.href = `/quiz?questions=${data.response.Choices[0].Message.Content}`;
+     })
+     .catch((error) => {
+            console.error("Failed to make post request to /generate/quiz: ",error);
+         })
+}
+
 const SavedFlashCards = () => {
   const [flashCardItems, setFlashCardItems] = useState<FlashCardItem[]>([]);
   const [fetched,setFetched] = useState<boolean>(false);
@@ -64,7 +98,8 @@ const SavedFlashCards = () => {
       </div>
         <button
       className="generate-btn"
-      onClick={() => alert(`Generate quiz for topic: ${item.TopicName}`)}
+      key={index}
+      onClick={()=>generateQuiz(item.TopicName,item.Data)}
     >
       Generate Quiz
     </button>
