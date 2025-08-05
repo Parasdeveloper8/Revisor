@@ -11,32 +11,7 @@ const LandingPage = () =>{
    const urlParams = new URLSearchParams(window.location.search);
    const code = urlParams.get('code');
 
-  if (code) {
-    fetch('http://localhost:8080/auth/google', {
-      method: 'POST',
-      credentials: "include",
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ "code":code }),
-    })
-      .then(res => res.json())
-      .then(data => {
-        //console.log('User data:', data.user);
-      const userData = {
-        name: data.user.name,
-        email: data.user.email,
-        token: data.token,
-        tokenExpiry: new Date(data.tokenExpiresAt), // convert to Date
-        };
-        setUserData(userData);
-        console.log("User login successful");
-      })
-      .catch((error)=>{
-        console.error("Failed to make post request to auth/google : ",error);
-      })
-    }
-         
-    if(!code){
-       //send request to /auth/me
+           //send request to /auth/me
         fetch('http://localhost:8080/auth/me', {
          method: 'GET',
          credentials: "include",
@@ -50,13 +25,37 @@ const LandingPage = () =>{
            tokenExpiry: new Date(data.tokenExpiresAt), // convert to Date
         };
         setUserData(userData);
-        console.log("User login successful");
+        console.log("User's data fetched successfully");
         })
         .catch((error)=>{
            setUserData({name:'',email:'',token:'',tokenExpiry:new Date});
-           console.log("Failed to make post request to auth/me : ",error);
+           console.log("Failed to make post request to auth/me .Login process will start: ",error);
+           //Now if there is any error it tells that there is something wrong with server or User is not logged in
+           //Let's assume that user is not logged in 
+           //Then call /auth/google api to do login process
+            fetch('http://localhost:8080/auth/google', {
+             method: 'POST',
+             credentials: "include",
+             headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ "code":code }),
+              })
+               .then(res => res.json())
+               .then(data => {
+              //console.log('User data:', data.user);
+        const userData = {
+        name: data.user.name,
+        email: data.user.email,
+        token: data.token,
+        tokenExpiry: new Date(data.tokenExpiresAt), // convert to Date
+        };
+                  setUserData(userData);
+                   console.log("User login successful");
+                  })
+              .catch((error)=>{
+                   console.error("Failed to make post request to auth/google : ",error);
+                 })
         });
-    }
+  
           //function to handle logout
          const handleLogout = ()=>{
            setUserData({name:'',email:'',token:'',tokenExpiry:new Date});

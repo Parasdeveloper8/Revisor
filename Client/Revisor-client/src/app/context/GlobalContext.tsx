@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, type ReactNode } from 'react';
 
 interface GlobalState {
   name: string;
@@ -31,9 +31,8 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
     token: '',
     tokenExpiry: new Date(0),
   });
-
   return (
-    <GlobalContext.Provider value={{ ...userData, setUserData }}>
+    <GlobalContext.Provider value={{ ...userData, setUserData}}>
       {children}
     </GlobalContext.Provider>
   );
