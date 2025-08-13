@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './FlashCard.css';
-import SuccessTick from '../success-tick/succTick';
+import SuccessTick from '../successTick/succTick';
 
 type FlashCardProps = {
     close: React.MouseEventHandler<HTMLButtonElement>;

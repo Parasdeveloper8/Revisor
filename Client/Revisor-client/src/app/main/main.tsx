@@ -1,6 +1,6 @@
 import { useState } from "react";
-import FlashCard from "../ui/flashcard/flashcard";
-import PlusButton from "../ui/plusbutton/plusbutton";
+import FlashCard from "../ui/flashCard/flashcard";
+import PlusButton from "../ui/plusButton/plusbutton";
 import "./main.css";
 
 const Main = () => {

@@ -1,10 +1,16 @@
 import React, { createContext, useContext, useState, type ReactNode } from 'react';
 
+type notification = {
+   message : string;
+   anyInfo : 'success' | 'error' | 'noInfo';
+}
 interface GlobalState {
   name: string;
   email: string;
   token: string;
   tokenExpiry: Date;
+  info : notification;
+  setInfo : React.Dispatch<React.SetStateAction<notification>>;
   setUserData: React.Dispatch<React.SetStateAction<UserData>>;
 }
 
@@ -31,8 +37,12 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
     token: '',
     tokenExpiry: new Date(0),
   });
+  const [info,setInfo] = useState<notification>({
+     message:'',
+     anyInfo:'noInfo'
+  });
   return (
-    <GlobalContext.Provider value={{ ...userData, setUserData}}>
+    <GlobalContext.Provider value={{ ...userData, setUserData,info,setInfo}}>
       {children}
     </GlobalContext.Provider>
   );

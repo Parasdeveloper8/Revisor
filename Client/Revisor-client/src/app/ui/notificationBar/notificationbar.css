@@ -1,0 +1,30 @@
+.notification-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 12px;
+  text-align: center;
+  font-weight: bold;
+  animation: slideDown 0.3s ease;
+  z-index: 9999;
+  color: white;
+  border-radius: 10px;
+}
+
+.notification-bar.success {
+  background-color:rgb(46, 190, 46); /* green */
+}
+
+.notification-bar.error {
+  background-color: #f44336; /* red */
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0%);
+  }
+}
