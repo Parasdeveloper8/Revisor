@@ -62,7 +62,9 @@ func GenerateQuiz(c *gin.Context) {
 				 Questions must not be from outside of given notes.
 				 Generate questions from data as provided whether data is less or much.
 				 Example if data contains only some lines then questions must be based on given lines.
-				 You have to treat as a teacher who asks question from notebook like from NCERT not from google.`,
+				 You have to treat as a teacher who asks question from notebook like from NCERT not from google.
+				 Separate all questions by 1,2,...,n numbers.
+				 Do not generate more than 15 questions and less than 5 questions.`,
 			},
 			{
 				"role":    "user",
