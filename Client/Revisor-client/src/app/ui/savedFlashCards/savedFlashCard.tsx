@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./savedFlashCard.css";
+import Loader from "../loader/loader";
 // type to hold each flashcard item
 type FlashCardItem = {
   Email: string;
@@ -31,8 +32,15 @@ type BackendResWrapper = {
   response: QuizQuesData;
   topic: string;
 };
-//This function sends data which has to be converted into quiz to backend
+
+const SavedFlashCards = () => {
+  const [flashCardItems, setFlashCardItems] = useState<FlashCardItem[]>([]);
+  const [fetched,setFetched] = useState<boolean>(false);
+  const [generatingQuiz,setIsGenerated] = useState<boolean>(false);
+   
+  //This function sends data which has to be converted into quiz to backend
 const generateQuiz = (topicName:FlashCardItem["TopicName"],data:FlashCardItem["Data"])=>{
+      setIsGenerated(true);
      const api:string = "http://localhost:8080/generate/quiz";
      fetch(api,{
       method:'POST',
@@ -43,17 +51,15 @@ const generateQuiz = (topicName:FlashCardItem["TopicName"],data:FlashCardItem["D
      .then(response=>response.json())
      .then((data :BackendResWrapper) => {
           console.log(data);
+          setIsGenerated(false);
           //move user to separate quiz page
           location.href = `/quiz?questions=${data.response.Choices[0].Message.Content}`;
      })
      .catch((error) => {
             console.error("Failed to make post request to /generate/quiz: ",error);
+            setIsGenerated(false);
          })
 }
-
-const SavedFlashCards = () => {
-  const [flashCardItems, setFlashCardItems] = useState<FlashCardItem[]>([]);
-  const [fetched,setFetched] = useState<boolean>(false);
 
   // Fetch all saved flashcards' data
   useEffect(() => {
@@ -77,8 +83,9 @@ const SavedFlashCards = () => {
   <div className="flashcards-container">
     <h2>Saved Flashcards</h2>
     <button onClick={() => (location.href = "/")}>Home</button>
+    {generatingQuiz && <Loader/> }
     {!fetched ? (
-      <p>Loading...</p>
+      <Loader/>
     ) : !Array.isArray(flashCardItems) ? (
       <p>Data format error.</p>
     ) : flashCardItems.length === 0 ? (

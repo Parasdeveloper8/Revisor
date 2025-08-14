@@ -7,6 +7,10 @@
   height: 100vh;
   text-align: center; /* ensures text stays centered */
   background: transparent;
+  position: fixed;
+  top:0;
+  left:0;
+  z-index: 9999;
 }
 
 .book {
