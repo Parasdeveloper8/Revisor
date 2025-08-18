@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // this function stores flashcard data in database
@@ -66,9 +67,11 @@ func StoreFlashcardData(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"info": "You have to Login first to create flashcard"})
 		return
 	}
+	//unique Id
+	uniqueId := uuid.New()
 	//create a db connection
 	conn := db.GetDB()
-	err = db.InsertFlashCardData(conn, email, Data.Topic, decodedData)
+	err = db.InsertFlashCardData(conn, email, Data.Topic, decodedData, uniqueId.String())
 	if err != nil {
 		log.Printf("Failed to store flashCardData in database %v", err)
 		return

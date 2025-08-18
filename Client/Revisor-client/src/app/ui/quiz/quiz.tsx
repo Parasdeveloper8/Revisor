@@ -1,16 +1,22 @@
 import { useSearchParams } from "react-router-dom";
 import "./quiz.css";
+import { useState } from "react";
 
 const QuizPage = () => {
   const [searchParam] = useSearchParams();
   const questions = searchParam.get("questions");
   const decoded = questions ? decodeURIComponent(questions) : "";
   const marks: number = 2;
-
+  const [isEvaluating,setIsEvaluating] = useState<boolean>(false);
   const decodedQues = decoded
     .split(/\d+\.\s+/) // Split by 1. , 2. , etc.
     .filter(q => q.trim() !== "");
 
+  const EvaluateAnswers = ()=>{
+        console.log("Evaluating your answers");
+    }
+    if(isEvaluating) EvaluateAnswers() ;
+      
   return (
     <>
       <h1>Quiz Page</h1>
@@ -34,6 +40,7 @@ const QuizPage = () => {
           </li>
         ))}
       </ul>
+      <button onClick={()=>setIsEvaluating(true)}>Evaluate marks</button>
     </>
   );
 };

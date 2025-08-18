@@ -11,6 +11,7 @@ type FlashCardItem = {
     Heading: string;
     Value: string;
   }[];
+  Uid : string;
 };
 
 // full API response

@@ -64,7 +64,8 @@ func GenerateQuiz(c *gin.Context) {
 				 Example if data contains only some lines then questions must be based on given lines.
 				 You have to treat as a teacher who asks question from notebook like from NCERT not from google.
 				 Separate all questions by 1,2,...,n numbers.
-				 Do not generate more than 15 questions and less than 5 questions.`,
+				 if notes are short then you can generate less questions but questions must be from inside the topic.
+				 Cover whole topic in 1 to 10 questions.`,
 			},
 			{
 				"role":    "user",

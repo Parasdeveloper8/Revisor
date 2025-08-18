@@ -18,11 +18,12 @@ type FlashCardData struct {
 	Time          []uint8 `db:"time"`
 	FormattedTime string  //this will contain formatted time
 	Data          []Data  `db:"data"`
+	Uid           string  `db:"uid"`
 }
 
 // this function fetches flashcard data from db
 func FetchFlashCardData(connection *sql.DB, email string) ([]FlashCardData, error) {
-	query := "select email,topicName,time,data from revisor.flashCardData where email = ?"
+	query := "select email,topicName,time,data,uid from revisor.flashCardData where email = ?"
 	rows, err := connection.Query(query, email)
 	if err != nil {
 		return nil, err
@@ -32,7 +33,7 @@ func FetchFlashCardData(connection *sql.DB, email string) ([]FlashCardData, erro
 	var jsonData []byte //Variable to scan returning data from data field
 	for rows.Next() {
 		var flashCD FlashCardData
-		err := rows.Scan(&flashCD.Email, &flashCD.TopicName, &flashCD.Time, &jsonData)
+		err := rows.Scan(&flashCD.Email, &flashCD.TopicName, &flashCD.Time, &jsonData, &flashCD.Uid)
 		if err != nil {
 			fmt.Printf("Failed to scan row %v", err)
 			return nil, err
