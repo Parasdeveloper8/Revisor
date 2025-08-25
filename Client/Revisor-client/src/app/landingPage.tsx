@@ -3,6 +3,7 @@ import { useGlobalContext } from "./context/GlobalContext";
 import Footer from "./footer/footer";
 import Main from "./main/main";
 import { useEffect } from "react";
+import Logo from "../assets/images/logo.svg";
 
 const LandingPage = () =>{
   const {setUserData,tokenExpiry,setInfo} = useGlobalContext(); //set value to global email state
@@ -89,7 +90,7 @@ const LandingPage = () =>{
     return (
         <>
         {/*NavBar header */}
-        <NavBar logoUrl="broken"/>
+        <NavBar logoUrl={Logo}/>
         {/*Main section */}
         <Main/>
         {/*Footer section */}
