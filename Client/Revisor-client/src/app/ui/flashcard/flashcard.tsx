@@ -55,7 +55,7 @@ const FlashCard: React.FC<FlashCardProps> = ({ close }) => {
           })
           .then(async (response)=>{
             if(response.ok){
-                console.log("request success");
+                console.log("flashCard created");
                 setFlashMsg({type:"success",message:"Flashcard created"});
             }else{
                 const failMsg =await response.json();
