@@ -8,9 +8,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // This function generates quiz using sonar model
@@ -57,7 +59,8 @@ func GenerateQuiz(c *gin.Context) {
 				"content": `
 				You are a quiz generator. 
 				Generate quiz questions based on the data provided by the user from the given notes.
-				 Don't give answers.
+				Give four options.
+				Give right answer also like right answer is __text of right answer__.
 				 Don't generate facts.
 				 Questions must not be from outside of given notes.
 				 Generate questions from data as provided whether data is less or much.
@@ -123,5 +126,70 @@ func GenerateQuiz(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error from Server"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"response": modelRes, "topic": ReceivedData.TopicName})
+	//generate a unique id for every quiz
+	quizUID := uuid.New()
+	//these structs will hold data (model response) and will be stored in database
+	type QuesOpt struct {
+		Question string
+		Options  []string
+	}
+	type ModelResJSON struct {
+		QuizId   string
+		Quesopts []QuesOpt
+	}
+	//Now in further code we will split data and store in struct
+	re := regexp.MustCompile(`\d+\.\s`)
+	parts := re.Split(modelRes.Choices[0].Message.Content, -1)
+
+	var modelResJsonVar *ModelResJSON
+	for _, part := range parts {
+		if part == "" {
+			continue // first split may be empty
+		}
+		//split by right answer
+		re := regexp.MustCompile(`\n\*\*`)
+		npart := re.Split(part, -1)
+		if len(npart) < 2 {
+			log.Printf("Skipping part because no answer found: %s\n", part)
+			continue
+		}
+		queoptpart := strings.TrimSpace(npart[0])
+		anspart := strings.TrimSpace(npart[1])
+
+		answer := strings.TrimPrefix(anspart, "Right answer is ")
+		answer = strings.TrimSpace(answer) //answer
+		//separate questions from options
+		lines := strings.Split(queoptpart, "\n")
+		if len(lines) < 2 {
+			log.Printf("Skipping part because options missing: %s\n", part)
+			continue
+		}
+
+		que := lines[0]   // first line is question
+		var opts []string //to store options
+
+		reg := regexp.MustCompile(`^[a-d]\)\s*(.*)$`) // match a) b) c) d)
+		for _, l := range lines[1:] {                 //[start:end] [starts with options]
+			l = strings.TrimSpace(l)
+			if l == "" { //if any option is empty
+				continue
+			}
+			match := reg.FindStringSubmatch(l)
+			if len(match) == 2 {
+				opts = append(opts, match[1]) // add the option text
+			}
+		}
+
+		quesOpts := QuesOpt{
+			Question: que,
+			Options:  opts,
+		}
+
+		// Append instead of overwrite
+		if modelResJsonVar == nil {
+			modelResJsonVar = &ModelResJSON{QuizId: quizUID.String()}
+		}
+		modelResJsonVar.Quesopts = append(modelResJsonVar.Quesopts, quesOpts)
+	}
+	c.JSON(http.StatusOK, gin.H{"response": modelResJsonVar, "topic": ReceivedData.TopicName})
 }
