@@ -3,6 +3,8 @@ package db
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
+	"log"
 )
 
 // this function inserts user in db
@@ -28,5 +30,34 @@ func InsertFlashCardData(connection *sql.DB, email string, topicName string, dat
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+// This function inserts quiz data in db
+func InsertQuizData(connection *sql.DB, email string, answers []string, question []string, quizId string) error {
+	if len(answers) != len(question) {
+		if len(answers) > len(question) {
+			err := errors.New("questions are missing")
+			return err
+		} else if len(question) > len(answers) {
+			err := errors.New("answers are missing")
+			return err
+		}
+	}
+	query := "insert into revisor.quiz(quizId,question,answers,email) values (?,?,?,?)"
+	//convert data into json --->
+	jsonAnswers, err := json.Marshal(answers)
+	if err != nil {
+		return err
+	}
+	jsonQuestions, err := json.Marshal(question)
+	if err != nil {
+		return err
+	}
+	_, err = connection.Exec(query, quizId, jsonQuestions, jsonAnswers, email)
+	if err != nil {
+		return err
+	}
+	log.Println("Quiz data saved in database")
 	return nil
 }

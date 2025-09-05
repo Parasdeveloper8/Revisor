@@ -1,6 +1,7 @@
 package quiz
 
 import (
+	"Revisor/db"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -19,6 +21,8 @@ import (
 // Data is received from frontend
 // This will send quiz back to frontend
 func GenerateQuiz(c *gin.Context) {
+	//create a db connection
+	conn := db.GetDB()
 	apiKey := os.Getenv("PERPLEXITY_API_KEY")
 	if apiKey == "" {
 		log.Printf("Empty PERPLEXITY_API_KEY in .env file")
@@ -142,12 +146,14 @@ func GenerateQuiz(c *gin.Context) {
 	parts := re.Split(modelRes.Choices[0].Message.Content, -1)
 
 	var modelResJsonVar *ModelResJSON
+	var answers []string
+	var questions []string
 	for _, part := range parts {
 		if part == "" {
 			continue // first split may be empty
 		}
-		//split by right answer
-		re := regexp.MustCompile(`\n\*\*`)
+		//Split by right answer
+		re := regexp.MustCompile(`Right answer is`)
 		npart := re.Split(part, -1)
 		if len(npart) < 2 {
 			log.Printf("Skipping part because no answer found: %s\n", part)
@@ -157,6 +163,8 @@ func GenerateQuiz(c *gin.Context) {
 		anspart := strings.TrimSpace(npart[1])
 
 		answer := strings.TrimPrefix(anspart, "Right answer is ")
+		answer = strings.ReplaceAll(answer, "*", "")
+		answer = strings.ReplaceAll(answer, "_", "")
 		answer = strings.TrimSpace(answer) //answer
 		//separate questions from options
 		lines := strings.Split(queoptpart, "\n")
@@ -190,6 +198,27 @@ func GenerateQuiz(c *gin.Context) {
 			modelResJsonVar = &ModelResJSON{QuizId: quizUID.String()}
 		}
 		modelResJsonVar.Quesopts = append(modelResJsonVar.Quesopts, quesOpts)
+		answers = append(answers, answer)
+		questions = append(questions, que)
+
+	}
+	//insert data of quiz including answers in database --->
+	session := sessions.Default(c)
+	sessionEmail := session.Get("email")
+
+	//To prevent panic we are using , ok syntax
+	email, ok := sessionEmail.(string)
+	if !ok || email == "" {
+		log.Println("Email in session is empty.User is not logged in")
+		fmt.Println(email)
+		c.JSON(http.StatusUnauthorized, gin.H{"info": "You have to Login first to save quiz"})
+		return
+	}
+	err = db.InsertQuizData(conn, email, answers, questions, quizUID.String())
+	if err != nil {
+		log.Printf("Failed to insert quiz data in database : %s\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Something went wrong in server side"})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"response": modelResJsonVar, "topic": ReceivedData.TopicName})
 }
