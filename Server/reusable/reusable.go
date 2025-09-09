@@ -1,6 +1,9 @@
 package reusable
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 // Convert []uint8 to time.Time
 func Uint8ToTime(uintTime []uint8) (time.Time, error) {
@@ -16,4 +19,14 @@ func Uint8ToTime(uintTime []uint8) (time.Time, error) {
 
 	// Return the parsed time
 	return decodedTime, nil
+}
+
+// convert json to string
+func UnmarshalJSONtoStringSlice(arg []byte) ([]string, error) {
+	var destination []string
+	err := json.Unmarshal(arg, &destination)
+	if err != nil {
+		return nil, err
+	}
+	return destination, nil
 }

@@ -34,7 +34,7 @@ func InsertFlashCardData(connection *sql.DB, email string, topicName string, dat
 }
 
 // This function inserts quiz data in db
-func InsertQuizData(connection *sql.DB, email string, answers []string, question []string, quizId string) error {
+func InsertQuizData(connection *sql.DB, email string, answers []string, question []string, options []string, quizId string, noteId string) error {
 	if len(answers) != len(question) {
 		if len(answers) > len(question) {
 			err := errors.New("questions are missing")
@@ -44,7 +44,11 @@ func InsertQuizData(connection *sql.DB, email string, answers []string, question
 			return err
 		}
 	}
-	query := "insert into revisor.quiz(quizId,question,answers,email) values (?,?,?,?)"
+	if len(options) == 0 {
+		err := errors.New("options are missing")
+		return err
+	}
+	query := "insert into revisor.quiz(quizId,question,answers,options,email,noteId) values (?,?,?,?,?,?)"
 	//convert data into json --->
 	jsonAnswers, err := json.Marshal(answers)
 	if err != nil {
@@ -54,7 +58,11 @@ func InsertQuizData(connection *sql.DB, email string, answers []string, question
 	if err != nil {
 		return err
 	}
-	_, err = connection.Exec(query, quizId, jsonQuestions, jsonAnswers, email)
+	jsonOptions, err := json.Marshal(options)
+	if err != nil {
+		return err
+	}
+	_, err = connection.Exec(query, quizId, jsonQuestions, jsonAnswers, jsonOptions, email, noteId)
 	if err != nil {
 		return err
 	}

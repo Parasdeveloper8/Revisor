@@ -2,7 +2,9 @@ package quiz
 
 import (
 	"Revisor/db"
+	"Revisor/reusable"
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -37,13 +39,85 @@ func GenerateQuiz(c *gin.Context) {
 	var ReceivedData struct {
 		TopicName string `json:"topicName"`
 		Notes     []Data `json:"data"`
+		NoteId    string `json:"noteId"`
 	}
+
+	//these structs will hold data (model response) and will be stored in database
+	type QuesOpt struct {
+		Question string
+		Options  []string
+	}
+	type ModelResJSON struct {
+		QuizId   string
+		Quesopts []QuesOpt
+	}
+
 	//Bind json data to ReceivedData
 	err := c.ShouldBindJSON(&ReceivedData)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No JSON data provided or incomplete data provided"})
 		log.Printf("No JSON data provided or incomplete data provided %v\n", err)
 		return
+	}
+	//if NoteId is already present in database
+	query := "select quizId,question,options from revisor.quiz where quiz.noteId = ?"
+	result := conn.QueryRow(query, ReceivedData.NoteId)
+	//if any row returned then send that returned row to frontend
+	//this prevents model API calling
+	type Response struct {
+		QuizId    string `db:"quizId"`
+		Question  []byte `db:"question"`
+		Options   []byte `db:"options"`
+		TopicName string
+	}
+	var response Response
+	err = result.Scan(&response.QuizId, &response.Question, &response.Options)
+	if err == nil {
+
+		//convert json data from db into string slice ---->
+		opts, err := reusable.UnmarshalJSONtoStringSlice(response.Options)
+		if err != nil {
+			fmt.Printf("Failed to parse data %v\n", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error from server"})
+			return
+		}
+		ques, err := reusable.UnmarshalJSONtoStringSlice(response.Question)
+		if err != nil {
+			fmt.Printf("Failed to parse data %v\n", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error from server"})
+			return
+		}
+		var options [][]string
+		chunkSize := 4
+		//split slice by 4 elements each
+		for i := 0; i < len(opts); i += chunkSize {
+			end := i + chunkSize
+			if end > len(opts) {
+				end = len(opts)
+			}
+			options = append(options, opts[i:end])
+
+		}
+		var finalRes ModelResJSON
+		for index, text := range ques {
+			quesOpts := QuesOpt{
+				Question: text,
+				Options:  options[index],
+			}
+			finalRes.Quesopts = append(finalRes.Quesopts, quesOpts)
+		}
+		finalRes.QuizId = response.QuizId
+		c.JSON(http.StatusOK, gin.H{"response": finalRes, "topic": ReceivedData.TopicName})
+		return
+	} else if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Printf("No matching datafound %v\n", err)
+			//Do further process because no existing data found in database
+		} else if err != sql.ErrNoRows {
+			fmt.Printf("Failed to scan row %v\n", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error from server"})
+			return
+		}
 	}
 	//Send data to model and get quiz data
 	url := "https://api.perplexity.ai/chat/completions"
@@ -132,15 +206,7 @@ func GenerateQuiz(c *gin.Context) {
 	}
 	//generate a unique id for every quiz
 	quizUID := uuid.New()
-	//these structs will hold data (model response) and will be stored in database
-	type QuesOpt struct {
-		Question string
-		Options  []string
-	}
-	type ModelResJSON struct {
-		QuizId   string
-		Quesopts []QuesOpt
-	}
+
 	//Now in further code we will split data and store in struct
 	re := regexp.MustCompile(`\d+\.\s`)
 	parts := re.Split(modelRes.Choices[0].Message.Content, -1)
@@ -148,6 +214,7 @@ func GenerateQuiz(c *gin.Context) {
 	var modelResJsonVar *ModelResJSON
 	var answers []string
 	var questions []string
+	var options []string
 	for _, part := range parts {
 		if part == "" {
 			continue // first split may be empty
@@ -173,8 +240,7 @@ func GenerateQuiz(c *gin.Context) {
 			continue
 		}
 
-		que := lines[0]   // first line is question
-		var opts []string //to store options
+		que := lines[0] // first line is question
 
 		reg := regexp.MustCompile(`^[a-d]\)\s*(.*)$`) // match a) b) c) d)
 		for _, l := range lines[1:] {                 //[start:end] [starts with options]
@@ -184,13 +250,13 @@ func GenerateQuiz(c *gin.Context) {
 			}
 			match := reg.FindStringSubmatch(l)
 			if len(match) == 2 {
-				opts = append(opts, match[1]) // add the option text
+				options = append(options, match[1]) // add the option text
 			}
 		}
 
 		quesOpts := QuesOpt{
 			Question: que,
-			Options:  opts,
+			Options:  options,
 		}
 
 		// Append instead of overwrite
@@ -200,7 +266,6 @@ func GenerateQuiz(c *gin.Context) {
 		modelResJsonVar.Quesopts = append(modelResJsonVar.Quesopts, quesOpts)
 		answers = append(answers, answer)
 		questions = append(questions, que)
-
 	}
 	//insert data of quiz including answers in database --->
 	session := sessions.Default(c)
@@ -214,7 +279,7 @@ func GenerateQuiz(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"info": "You have to Login first to save quiz"})
 		return
 	}
-	err = db.InsertQuizData(conn, email, answers, questions, quizUID.String())
+	err = db.InsertQuizData(conn, email, answers, questions, options, quizUID.String(), ReceivedData.NoteId)
 	if err != nil {
 		log.Printf("Failed to insert quiz data in database : %s\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Something went wrong in server side"})
