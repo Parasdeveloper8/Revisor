@@ -1,46 +1,115 @@
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./quiz.css";
 import { useState } from "react";
 
 const QuizPage = () => {
-  const [searchParam] = useSearchParams();
-  const questions = searchParam.get("questions");
-  const decoded = questions ? decodeURIComponent(questions) : "";
-  const marks: number = 2;
-  const [isEvaluating,setIsEvaluating] = useState<boolean>(false);
-  const decodedQues = decoded
-    .split(/\d+\.\s+/) // Split by 1. , 2. , etc.
-    .filter(q => q.trim() !== "");
+  type QuesOpts = {
+    Question: string;
+    Options: string[];
+  };
 
-  const EvaluateAnswers = ()=>{
-        console.log("Evaluating your answers");
-    }
-    if(isEvaluating) EvaluateAnswers() ;
-      
+  type QuizQuesData = {
+    response: {
+      QuizId: string;
+      Quesopts: QuesOpts[];
+    };
+    topic: string;
+  };
+  const location = useLocation();
+  const { quizData } = location.state || {};
+  const navigate = useNavigate();
+
+  // Check if quizData and required fields are valid
+  const isValidQuizData =
+    quizData &&
+    quizData.response &&
+    Array.isArray(quizData.response.Quesopts) &&
+    quizData.response.Quesopts.length > 0;
+
+  const [answers, setAnswers] = useState<(string | null)[]>(
+    isValidQuizData
+      ? Array(quizData.response.Quesopts.length).fill(null)
+      : []
+  );
+
+  const handleOptionSelect = (qIndex: number, option: string) => {
+    const updatedAnswers = [...answers];
+    updatedAnswers[qIndex] = option;
+    setAnswers(updatedAnswers);
+  };
+
+  if (!isValidQuizData) {
+    return (
+      <div className="error-boundary">
+        <h2>It's not you, it's us.</h2>
+        <p>Something went wrong with loading the quiz questions or options.</p>
+        <button onClick={() => navigate("/")}>Go Back Home</button>
+      </div>
+    );
+  }
+
+  const evaluateMarks = (quizId:string) =>{
+     const api = "http://localhost:8080/evaluate/quiz";
+     fetch(api,{
+       method:'POST',
+       credentials:'include',
+       headers:{ 'Content-Type': 'application/json' },
+       body: JSON.stringify({"userAnswers":answers,"quizId":quizId})
+     })
+       .then(response => response.json())
+       .then((data)=>{
+        const result = {
+          Marks:data.marks,
+          TotalMarks:data["total marks"]
+        };
+            navigate('/result',{state:{result}});
+       })
+         .catch(error =>{
+            console.error("Failed to make request to  /evaluate/quiz: ",error);
+          })
+  }
   return (
     <>
       <h1>Quiz Page</h1>
-      <button id="homeBtn" onClick={() => (location.href = "/")}>Home</button>
-      <ul>
-        {decodedQues.map((q, index) => (
-          <li key={index} className="question-item">
-            <div className="question-text">
-              {index + 1}. {q} <b>[{marks}]</b>
+      <button id="homeBtn" onClick={() => navigate("/")}>
+        Home
+      </button>
+
+      <div className="quiz-container">
+        <h3>Topic: {quizData.topic}</h3>
+
+        {(quizData as QuizQuesData).response.Quesopts.map(
+          (q: QuesOpts, qIndex: number) => (
+            <div key={qIndex} className="question-card">
+              <h4>
+                Q{qIndex + 1}. {q.Question}
+              </h4>
+              <div className="options">
+                {Array.isArray(q.Options) && q.Options.length > 0 ? (
+                  q.Options.map((opt: string, oIndex: number) => (
+                    <label key={oIndex} className="option-label">
+                      <input
+                        type="radio"
+                        name={`question-${qIndex}`}
+                        value={opt}
+                        checked={answers[qIndex] === opt}
+                        onChange={() =>
+                          handleOptionSelect(qIndex, opt)
+                        }
+                      />
+                      <span>{opt}</span>
+                    </label>
+                  ))
+                ) : (
+                  <p>It's not you, it's us. Options missing.</p>
+                )}
+              </div>
             </div>
-            <textarea
-              className="question-input"
-              placeholder="Your answer..."
-              rows={1}
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = "auto";
-                target.style.height = target.scrollHeight + "px";
-              }}
-            ></textarea>
-          </li>
-        ))}
-      </ul>
-      <button onClick={()=>setIsEvaluating(true)}>Evaluate marks</button>
+          )
+        )}
+      </div>
+
+      <button className="evaluate-btn" onClick={()=>evaluateMarks((quizData as QuizQuesData).response.QuizId)}>Evaluate marks</button>
     </>
   );
 };

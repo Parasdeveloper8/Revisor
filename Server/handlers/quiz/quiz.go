@@ -111,7 +111,7 @@ func GenerateQuiz(c *gin.Context) {
 		return
 	} else if err != nil {
 		if err == sql.ErrNoRows {
-			fmt.Printf("No matching datafound %v\n", err)
+			fmt.Printf("No matching data found %v\n", err)
 			//Do further process because no existing data found in database
 		} else if err != sql.ErrNoRows {
 			fmt.Printf("Failed to scan row %v\n", err)
@@ -286,4 +286,75 @@ func GenerateQuiz(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"response": modelResJsonVar, "topic": ReceivedData.TopicName})
+}
+
+// this function sends user their marks of quiz given by them
+// Answers from the db and user's answers will be compared using a quizID
+func EvaluateQuiz(c *gin.Context) {
+	//create a db connection
+	conn := db.GetDB()
+
+	//struct to hold frontend received data
+	var ReceivedData struct {
+		UserAnswers []string `json:"userAnswers"`
+		QuizID      string   `json:"quizId"`
+	}
+
+	//Bind json data to ReceivedData
+	err := c.ShouldBindJSON(&ReceivedData)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No JSON data provided or incomplete data provided"})
+		log.Printf("No JSON data provided or incomplete data provided %v\n", err)
+		return
+	}
+	//fetch answers from db using QuizID
+	query := "select answers from revisor.quiz where quizId = ?"
+	result := conn.QueryRow(query, ReceivedData.QuizID)
+	type DBResponse struct {
+		Answers []byte `json:"answers"`
+	}
+	var dbresponse DBResponse
+	err = result.Scan(&dbresponse.Answers)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Printf("No matching data found %v\n", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error from server"})
+			return
+		} else if err != sql.ErrNoRows {
+			fmt.Printf("Failed to scan row %v\n", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error from server"})
+			return
+		}
+	}
+	//convert json data from db into string slice ---->
+	answers, err := reusable.UnmarshalJSONtoStringSlice(dbresponse.Answers)
+	if err != nil {
+		fmt.Printf("Failed to parse data %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error from server"})
+		return
+	}
+
+	//Compare answers and user's answers
+	if len(answers) != len(ReceivedData.UserAnswers) {
+		fmt.Printf("Answers are missing \n [length of answers(db):%v] \n [length of answers(users):%v]", len(answers), len(ReceivedData.UserAnswers))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Answers are missing"})
+		return
+	}
+	var marks int
+	var totalMarks = len(answers) * 2
+	for i := 0; i < len(answers); i++ {
+		ans := strings.TrimSpace(answers[i])
+		userAns := strings.TrimSpace(ReceivedData.UserAnswers[i])
+		//fmt.Printf("Answers by db : %v\n Answers by user : %v\n", answers, ReceivedData.UserAnswers)
+		if strings.Contains(ans, userAns) || strings.Contains(userAns, ans) {
+			marks += 2
+		}
+	}
+	for v := 0; v < len(ReceivedData.UserAnswers); v++ {
+		if ReceivedData.UserAnswers[v] == "" {
+			marks -= 2
+		}
+	}
+	fmt.Println(marks)
+	c.JSON(http.StatusOK, gin.H{"total marks": totalMarks, "marks": marks})
 }
