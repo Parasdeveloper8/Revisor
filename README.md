@@ -1,6 +1,6 @@
-# Reviser 📘✨  
+# Revisor 📘✨  
 
-Reviser is a lightweight tool built with *Golang* (backend) and *TypeScript* (frontend) that helps you *revise educational concepts quickly and effectively*.  
+Revisor is a lightweight tool built with *Golang* (backend) and *TypeScript* (frontend) that helps you *revise educational concepts quickly and effectively*.  
 It integrates with *Perplexity AI API* to generate practice questions, so you can focus on revision. 
 
 ---
@@ -25,5 +25,5 @@ It integrates with *Perplexity AI API* to generate practice questions, so you ca
 
 ### Clone the repo  
 ```bash
-git clone https://github.com/your-username/reviser.git
-cd reviser
+git clone https://github.com/Parasdeveloper8/Revisor.git
+cd Revisor
