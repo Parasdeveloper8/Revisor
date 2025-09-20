@@ -1,3 +1,116 @@
-#resultDiv{
-    background-color: white;
+.result-body{
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #74ebd5 0%, #acb6e5 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* Home Button */
+.result-homeBtn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background-color: #4cafef;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.result-homeBtn:hover {
+  background-color: #379ad8;
+  transform: scale(1.05);
+}
+
+/* Result Container */
+.result-container {
+  background-color: white;
+  max-width: 400px;
+  width: 90%;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  animation: result-fadeIn 0.7s ease-in-out;
+}
+
+/* Trophy Animation */
+.result-trophy {
+  width: 100%;
+  max-width: 250px;
+  height: auto;
+  margin: 0 auto 20px auto;
+  display: block;
+}
+
+/* Score Text */
+.result-score {
+  font-size: 20px;
+  font-weight: 500;
+  color: #333;
+}
+
+.result-score b {
+  color: #4cafef;
+  font-size: 22px;
+}
+
+/* Error Boundary */
+.result-error {
+  text-align: center;
+  background: #fff;
+  padding: 40px;
+  border-radius: 15px;
+  max-width: 400px;
+  margin: auto;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.result-error button {
+  margin-top: 20px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background-color: #f44336;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.result-error button:hover {
+  background-color: #d32f2f;
+}
+
+/* Animations */
+@keyframes result-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+  .result-container {
+    padding: 20px;
+  }
+
+  .result-score {
+    font-size: 18px;
+  }
+
+  .result-homeBtn {
+    font-size: 12px;
+    padding: 8px 14px;
+  }
 }
