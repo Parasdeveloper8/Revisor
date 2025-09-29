@@ -21,6 +21,7 @@ const FlashCard: React.FC<FlashCardProps> = ({ close }) => {
   const [flashCardData, setFlashCardData] = useState<FlashCardData[]>([{ heading: '', value: '' }]);
   const [topic, setTopic] = useState<string>('');
   const [flashMsg, setFlashMsg] = useState<FlashMsg | null>(null);
+  const textRefs = React.useRef<(HTMLTextAreaElement | null)[]>([]);
 
   // This state keeps track of which textarea is currently recording
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -57,10 +58,11 @@ const FlashCard: React.FC<FlashCardProps> = ({ close }) => {
     }
   };
 
-  const autoResize = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const textarea = e.target;
-    textarea.style.height = 'auto';
-    textarea.style.height = textarea.scrollHeight + 'px';
+  const autoResize = (index:number) => {
+    const textArea = textRefs.current[index];
+    if (!textArea) return ;
+    textArea.style.height = 'auto';
+    textArea.style.height = textArea.scrollHeight + 'px';
   };
 
   // Start or stop speech recognition for a specific textarea
@@ -78,12 +80,14 @@ const FlashCard: React.FC<FlashCardProps> = ({ close }) => {
       setActiveIndex(index);
       SpeechRecognition.startListening({ continuous: true });
     }
+    
   };
 
   // Update textarea in real-time while recording
   React.useEffect(() => {
     if (activeIndex !== null) {
       handleChange(activeIndex, 'value', transcript);
+      autoResize(activeIndex);
     }
   }, [transcript, activeIndex]);
 
@@ -121,11 +125,12 @@ const FlashCard: React.FC<FlashCardProps> = ({ close }) => {
                 <label>
                   <span>Text</span>
                   <textarea
+                  ref={el => {textRefs.current[index] = el;}}
                     placeholder="Enter text here..."
                     value={flashCardData[index]?.value || ''}
                     onChange={e => {
                       handleChange(index, 'value', e.target.value);
-                      autoResize(e);
+                      autoResize(index);
                     }}
                   />
                 </label>
