@@ -22,11 +22,12 @@ func Uint8ToTime(uintTime []uint8) (time.Time, error) {
 }
 
 // convert json to string
-func UnmarshalJSONtoStringSlice(arg []byte) ([]string, error) {
-	var destination []string
+func UnmarshalJSONtoStringSlice[arr any](arg []byte) (arr, error) {
+	var destination arr
 	err := json.Unmarshal(arg, &destination)
 	if err != nil {
-		return nil, err
+		var empty arr
+		return empty, err
 	}
 	return destination, nil
 }

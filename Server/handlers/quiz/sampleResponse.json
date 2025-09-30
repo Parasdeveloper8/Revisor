@@ -1,52 +1,10 @@
 {
-  "id": "0039347d-e5bf-4460-aa7d-29bcc7755b5f",
+  "id": "c713b68b-5bed-40f9-905a-f8cd73920a76",
   "model": "sonar",
-  "created": 1753696298,
-  "usage": {
-    "prompt_tokens": 37,
-    "completion_tokens": 235,
-    "total_tokens": 272,
-    "search_context_size": "low"
-  },
-  "citations": [
-    "https://www.spanish.academy/blog/watch-out-what-does-ojo-mean-in-spanish/",
-    "https://ojosparesorts.com/privacy-policy/",
-    "https://en.wiktionary.org/wiki/ojo",
-    "https://missiontitle.com/ojo-labs-to-acquire-realsavvy/",
-    "https://www.spanishdict.com/translate/ojo"
-  ],
-  "search_results": [
-    {
-      "title": "Watch Out! What Does 'Ojo' Mean in Spanish?",
-      "url": "https://www.spanish.academy/blog/watch-out-what-does-ojo-mean-in-spanish/",
-      "date": "2021-02-25",
-      "last_updated": "2025-07-07"
-    },
-    {
-      "title": "Privacy Policy - Ojo Spa Resorts",
-      "url": "https://ojosparesorts.com/privacy-policy/",
-      "date": "2025-04-01",
-      "last_updated": "2025-07-05"
-    },
-    {
-      "title": "ojo - Wiktionary, the free dictionary",
-      "url": "https://en.wiktionary.org/wiki/ojo",
-      "date": "2024-12-10",
-      "last_updated": "2025-07-26"
-    },
-    {
-      "title": "OJO Labs to acquire RealSavvy - Mission Title",
-      "url": "https://missiontitle.com/ojo-labs-to-acquire-realsavvy/",
-      "date": "2019-10-01",
-      "last_updated": "2024-10-18"
-    },
-    {
-      "title": "Ojo | Spanish to English Translation - SpanishDictionary.com",
-      "url": "https://www.spanishdict.com/translate/ojo",
-      "date": "2025-07-24",
-      "last_updated": "2025-07-24"
-    }
-  ],
+  "created": 1759236711,
+  "usage": {},
+  "citations": [],
+  "search_results": [],
   "object": "chat.completion",
   "choices": [
     {
@@ -54,11 +12,7 @@
       "finish_reason": "stop",
       "message": {
         "role": "assistant",
-        "content": "Here are some quiz questions based on the provided data about the word \"ojo\":\n\n1. What is the most basic meaning of the Spanish word *ojo*? \n2. In Spanish, besides meaning \"eye,\" what colloquial sense does *ojo* often convey?  \n3. What is the origin of the Spanish word *ojo* according to etymology?  \n4. Name two other Romance languages that have cognates (similar words) for *ojo*.  \n5. What are some derived terms or expressions that use *ojo* in Spanish? \n6. In Venetan language, what does the word *ojo* mean?  \n7. What is the Yoruba noun *òjò* associated with?  \n8. What is one company named OJO Labs known for?  \n9. How does OJO Labs improve consumer interaction in real estate websites?  \n10. What is the primary priority stated in the privacy policy of Ojo Spa Resorts? \n\nThese questions focus on meanings, origins, language comparisons, and brand references related to \"ojo,\" reflecting the different contexts found in the provided data."
-      },
-      "delta": {
-        "role": "assistant",
-        "content": ""
+        "content": "1. What are nutrients as defined in the given data?\nA) Substances produced by the body for energy.\nB) Organic substances only required for growth.\nC) All organic and inorganic substances required to sustain life.\nD) Only vitamins and minerals required for disease protection.\nRight answer is C) All organic and inorganic substances required to sustain life.\n\n2. What is meant by nutrition according to the notes?\nA) The production of food by plants.\nB) Intake of nutrients and their utilization by the body.\nC) Only the consumption of carbohydrates for energy.\nD) The breakdown of fats in the body.\nRight answer is B) Intake of nutrients and their utilization by the body.\n\n3. Which of the following correctly describes autotrophic nutrition?\nA) Organisms consume food from others.\nB) Organisms make their own food from inorganic substances.\nC) Organisms feed only on dead organic matter.\nD) Organisms depend entirely on heterotrophic organisms.\nRight answer is B) Organisms make their own food from inorganic substances.\n\n4. What are the two types of autotrophic nutrition listed?\nA) Photosynthesis and heterotrophy.\nB) Photosynthesis and saprotrophy.\nC) Photosynthesis and chemosynthesis.\nD) Chemoheterotrophy and photosynthesis.\nRight answer is C) Photosynthesis and chemosynthesis.\n\n5. Which organisms are examples of autotrophs?\nA) Animals and fungi.\nB) Green plants and bacteria performing chemosynthesis.\nC) All heterotrophic organisms.\nD) Only fungi.\nRight answer is B) Green plants and bacteria performing chemosynthesis.\n\n6. What distinguishes heterotrophic nutrition?\nA) Synthesizing food from inorganic substances.\nB) Feeding on other organisms or organic matter.\nC) Producing food through sunlight.\nD) Using minerals from soil to produce food.\nRight answer is B) Feeding on other organisms or organic matter.\n\n7. How many types of heterotrophic nutrition are mentioned?\nA) One.\nB) Two.\nC) Three.\nD) Four.\nRight answer is C) Three.\n\n8. Which of the following is NOT a component of nutrition according to the data?\nA) Carbohydrates for energy.\nB) Vitamins for organ function.\nC) Light energy for direct absorption by humans.\nD) Proteins for growth and repair.\nRight answer is C) Light energy for direct absorption by humans."
       }
     }
   ]

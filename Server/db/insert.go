@@ -34,7 +34,7 @@ func InsertFlashCardData(connection *sql.DB, email string, topicName string, dat
 }
 
 // This function inserts quiz data in db
-func InsertQuizData(connection *sql.DB, email string, answers []string, question []string, options []string, quizId string, noteId string) error {
+func InsertQuizData(connection *sql.DB, email string, answers []string, question []string, options [][]string, quizId string, noteId string) error {
 	if len(answers) != len(question) {
 		if len(answers) > len(question) {
 			err := errors.New("questions are missing")

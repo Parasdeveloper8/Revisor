@@ -75,34 +75,23 @@ func GenerateQuiz(c *gin.Context) {
 	if err == nil {
 
 		//convert json data from db into string slice ---->
-		opts, err := reusable.UnmarshalJSONtoStringSlice(response.Options)
+		opts, err := reusable.UnmarshalJSONtoStringSlice[[][]string](response.Options)
 		if err != nil {
 			fmt.Printf("Failed to parse data %v\n", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error from server"})
 			return
 		}
-		ques, err := reusable.UnmarshalJSONtoStringSlice(response.Question)
+		ques, err := reusable.UnmarshalJSONtoStringSlice[[]string](response.Question)
 		if err != nil {
 			fmt.Printf("Failed to parse data %v\n", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error from server"})
 			return
-		}
-		var options [][]string
-		chunkSize := 4
-		//split slice by 4 elements each
-		for i := 0; i < len(opts); i += chunkSize {
-			end := i + chunkSize
-			if end > len(opts) {
-				end = len(opts)
-			}
-			options = append(options, opts[i:end])
-
 		}
 		var finalRes ModelResJSON
 		for index, text := range ques {
 			quesOpts := QuesOpt{
 				Question: text,
-				Options:  options[index],
+				Options:  opts[index],
 			}
 			finalRes.Quesopts = append(finalRes.Quesopts, quesOpts)
 		}
@@ -135,18 +124,19 @@ func GenerateQuiz(c *gin.Context) {
 			{
 				"role": "system",
 				"content": `
-				You are a quiz generator. 
-				Generate quiz questions based on the data provided by the user from the given notes.
-				Give four options.
-				Give right answer also like right answer is __text of right answer__.
-				 Don't generate facts.
-				 Questions must not be from outside of given notes.
-				 Generate questions from data as provided whether data is less or much.
-				 Example if data contains only some lines then questions must be based on given lines.
-				 You have to treat as a teacher who asks question from notebook like from NCERT not from google.
-				 Separate all questions by 1,2,...,n numbers.
-				 if notes are short then you can generate less questions but questions must be from inside the topic.
-				 Cover whole topic in 1 to 10 questions.`,
+            You are a strict quiz generator.
+            Generate quiz questions strictly from the data provided by the user. 
+            Follow these rules exactly:
+
+            1. Generate 1 to 10 questions depending on the length of the notes.
+            2. Each question must have **exactly 4 options**, labeled A, B, C, D — no more, no less.
+            3. Only **one option should be correct**. Mention the correct option clearly like: "Right answer is __<text>__".
+            4. Do not include any additional facts, explanations, or content outside the given notes.
+            5. Questions must cover the given notes and nothing else.
+            6. Separate questions by numbering: 1, 2, 3, ...
+            7. Output must be formatted clearly, easy to parse for storing in database.
+            8. Never generate more than 4 options per question.
+            `,
 			},
 			{
 				"role":    "user",
@@ -189,6 +179,7 @@ func GenerateQuiz(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read response body"})
 		return
 	}
+	//fmt.Printf("Raw response : %v\n", string(respBody))
 	//struct to hold response from model
 	type ModelResponse struct {
 		Choices []struct {
@@ -214,8 +205,9 @@ func GenerateQuiz(c *gin.Context) {
 	var modelResJsonVar *ModelResJSON
 	var answers []string
 	var questions []string
-	var options []string
+	var allOpts [][]string
 	for _, part := range parts {
+		var options []string
 		if part == "" {
 			continue // first split may be empty
 		}
@@ -242,7 +234,7 @@ func GenerateQuiz(c *gin.Context) {
 
 		que := lines[0] // first line is question
 
-		reg := regexp.MustCompile(`^[a-d]\)\s*(.*)$`) // match a) b) c) d)
+		reg := regexp.MustCompile(`^[A-D]\)\s*(.*)$`) // match A) B) C) D)
 		for _, l := range lines[1:] {                 //[start:end] [starts with options]
 			l = strings.TrimSpace(l)
 			if l == "" { //if any option is empty
@@ -253,12 +245,12 @@ func GenerateQuiz(c *gin.Context) {
 				options = append(options, match[1]) // add the option text
 			}
 		}
-
+		allOpts = append(allOpts, options)
 		quesOpts := QuesOpt{
 			Question: que,
 			Options:  options,
 		}
-
+		//fmt.Printf("Options :%v\n", options)
 		// Append instead of overwrite
 		if modelResJsonVar == nil {
 			modelResJsonVar = &ModelResJSON{QuizId: quizUID.String()}
@@ -279,7 +271,7 @@ func GenerateQuiz(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"info": "You have to Login first to save quiz"})
 		return
 	}
-	err = db.InsertQuizData(conn, email, answers, questions, options, quizUID.String(), ReceivedData.NoteId)
+	err = db.InsertQuizData(conn, email, answers, questions, allOpts, quizUID.String(), ReceivedData.NoteId)
 	if err != nil {
 		log.Printf("Failed to insert quiz data in database : %s\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Something went wrong in server side"})
@@ -327,7 +319,7 @@ func EvaluateQuiz(c *gin.Context) {
 		}
 	}
 	//convert json data from db into string slice ---->
-	answers, err := reusable.UnmarshalJSONtoStringSlice(dbresponse.Answers)
+	answers, err := reusable.UnmarshalJSONtoStringSlice[[]string](dbresponse.Answers)
 	if err != nil {
 		fmt.Printf("Failed to parse data %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error from server"})
