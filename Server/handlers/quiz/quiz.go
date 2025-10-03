@@ -129,7 +129,7 @@ func GenerateQuiz(c *gin.Context) {
             Follow these rules exactly:
 
             1. Generate 1 to 10 questions depending on the length of the notes.
-            2. Each question must have **exactly 4 options**, labeled A, B, C, D — no more, no less.
+            2. Each question must have **exactly 4 options**, labeled A), B), C), D) — no more, no less.
             3. Only **one option should be correct**. Mention the correct option clearly like: "Right answer is __<text>__".
             4. Do not include any additional facts, explanations, or content outside the given notes.
             5. Questions must cover the given notes and nothing else.
@@ -214,6 +214,7 @@ func GenerateQuiz(c *gin.Context) {
 		//Split by right answer
 		re := regexp.MustCompile(`Right answer is`)
 		npart := re.Split(part, -1)
+		fmt.Printf("Npart : %v\n", npart)
 		if len(npart) < 2 {
 			log.Printf("Skipping part because no answer found: %s\n", part)
 			continue
@@ -245,6 +246,7 @@ func GenerateQuiz(c *gin.Context) {
 				options = append(options, match[1]) // add the option text
 			}
 		}
+
 		allOpts = append(allOpts, options)
 		quesOpts := QuesOpt{
 			Question: que,
@@ -253,7 +255,7 @@ func GenerateQuiz(c *gin.Context) {
 		//fmt.Printf("Options :%v\n", options)
 		// Append instead of overwrite
 		if modelResJsonVar == nil {
-			modelResJsonVar = &ModelResJSON{QuizId: quizUID.String()}
+			modelResJsonVar = &ModelResJSON{QuizId: quizUID.String(), Quesopts: []QuesOpt{}}
 		}
 		modelResJsonVar.Quesopts = append(modelResJsonVar.Quesopts, quesOpts)
 		answers = append(answers, answer)
@@ -349,4 +351,25 @@ func EvaluateQuiz(c *gin.Context) {
 	}
 	fmt.Println(marks)
 	c.JSON(http.StatusOK, gin.H{"total marks": totalMarks, "marks": marks})
+}
+
+// this function deletes quiz on basis of quizID given by frontend
+func DeleteQuiz(c *gin.Context) {
+	//create a db connection
+	conn := db.GetDB()
+	var quizID string
+	//Bind json data to quizID
+	err := c.ShouldBindJSON(&quizID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No JSON data provided"})
+		log.Printf("No JSON data provided %v\n", err)
+		return
+	}
+	err = db.DeleteQuiz(quizID, conn)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete quiz"})
+		log.Printf("Failed to delete quiz %v\n", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"info": "Quiz deleted successfully"})
 }

@@ -45,5 +45,6 @@ func main() {
 	r.GET("/flashcard/get/data", middleware.CheckISAuthenticated(), flashcard.SendFlashCardData)
 	r.POST("/generate/quiz", middleware.CheckISAuthenticated(), quiz.GenerateQuiz)
 	r.POST("/evaluate/quiz", middleware.CheckISAuthenticated(), quiz.EvaluateQuiz)
+	r.DELETE("/delete/quiz", middleware.CheckISAuthenticated(), quiz.DeleteQuiz)
 	r.Run(":8080")
 }

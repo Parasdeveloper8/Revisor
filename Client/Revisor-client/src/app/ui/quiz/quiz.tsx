@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import "./quiz.css";
-import { useState } from "react";
+import { useState ,useEffect} from "react";
 
 const QuizPage = () => {
   type QuesOpts = {
@@ -17,7 +17,17 @@ const QuizPage = () => {
   };
   const location = useLocation();
   const { quizData } = location.state || {};
+  const [isOptionMissing,setOptionMissing] = useState<boolean>(false);
   const navigate = useNavigate();
+ 
+    
+  useEffect(() => {
+  (quizData as QuizQuesData).response.Quesopts.forEach((q: QuesOpts) => {
+    if (!Array.isArray(q.Options) || q.Options.length === 0) {
+      setOptionMissing(true);
+    }
+  });
+   }, [quizData]);
 
   // Check if quizData and required fields are valid
   const isValidQuizData =
@@ -48,6 +58,29 @@ const QuizPage = () => {
     );
   }
 
+  //send request to server to delete existing quiz belonging to current quizID
+  const deleteQuiz = () =>{
+      const api = "http://localhost:8080/delete/quiz";
+       fetch(api,{
+       method:'DELETE',
+       credentials:'include',
+       headers:{ 'Content-Type': 'application/json' },
+       body: JSON.stringify({"quizId":(quizData as QuizQuesData).response.QuizId})
+     }).then(response => {
+      if(response.ok){
+        console.log(`Quiz[${(quizData as QuizQuesData).response.QuizId}] is deleted`);
+        setOptionMissing(false);
+      }else{
+        console.error("Error in deleting quiz");
+        setOptionMissing(true);
+      }
+     })
+     .catch(error =>{
+            console.error("Failed to make request to  /delete/quiz: ",error);
+            setOptionMissing(true);
+          })
+  }
+  if(isOptionMissing) deleteQuiz();
   const evaluateMarks = (quizId:string) =>{
      const api = "http://localhost:8080/evaluate/quiz";
      fetch(api,{
@@ -68,6 +101,7 @@ const QuizPage = () => {
             console.error("Failed to make request to  /evaluate/quiz: ",error);
           })
   }
+
   return (
     <>
       <h1>Quiz Page</h1>
@@ -101,8 +135,9 @@ const QuizPage = () => {
                     </label>
                   ))
                 ) : (
-                  <p>It's not you, it's us. Options missing.</p>
-                )}
+                  <p>It's not you, it's us. Try it again.</p>
+                )
+              }
               </div>
             </div>
           )
