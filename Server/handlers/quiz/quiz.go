@@ -1,8 +1,8 @@
 package quiz
 
 import (
+	utils "Revisor/Utils"
 	"Revisor/db"
-	"Revisor/reusable"
 	"bytes"
 	"database/sql"
 	"encoding/json"
@@ -75,13 +75,13 @@ func GenerateQuiz(c *gin.Context) {
 	if err == nil {
 
 		//convert json data from db into string slice ---->
-		opts, err := reusable.UnmarshalJSONtoStringSlice[[][]string](response.Options)
+		opts, err := utils.UnmarshalJSONtoStringSlice[[][]string](response.Options)
 		if err != nil {
 			fmt.Printf("Failed to parse data %v\n", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error from server"})
 			return
 		}
-		ques, err := reusable.UnmarshalJSONtoStringSlice[[]string](response.Question)
+		ques, err := utils.UnmarshalJSONtoStringSlice[[]string](response.Question)
 		if err != nil {
 			fmt.Printf("Failed to parse data %v\n", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error from server"})
@@ -322,7 +322,7 @@ func EvaluateQuiz(c *gin.Context) {
 		}
 	}
 	//convert json data from db into string slice ---->
-	answers, err := reusable.UnmarshalJSONtoStringSlice[[]string](dbresponse.Answers)
+	answers, err := utils.UnmarshalJSONtoStringSlice[[]string](dbresponse.Answers)
 	if err != nil {
 		fmt.Printf("Failed to parse data %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error from server"})

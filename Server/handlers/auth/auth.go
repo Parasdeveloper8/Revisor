@@ -1,8 +1,8 @@
 package auth
 
 import (
+	utils "Revisor/Utils"
 	"Revisor/db"
-	"Revisor/reusable"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -112,7 +112,7 @@ func Login(c *gin.Context) {
 	err = result.Scan(&name)
 
 	//prepare data to store in session
-	sessionData := []reusable.SessionKeyValue{
+	sessionData := []utils.SessionKeyValue{
 		{Key: "name", Value: userInfo.Name},
 		{Key: "email", Value: userInfo.Email},
 		{Key: "token", Value: token.AccessToken},
@@ -128,7 +128,7 @@ func Login(c *gin.Context) {
 		}
 		log.Println("User saved")
 		//log.Println(userInfo.Email) //debugging line
-		err = reusable.SessionSet(c, sessionData)
+		err = utils.SessionSet(c, sessionData)
 		if err != nil {
 			log.Printf("Failed to save session %v", err)
 			return
@@ -142,7 +142,7 @@ func Login(c *gin.Context) {
 	}
 	log.Println("user already exist")
 	//log.Println(userInfo.Email) //debugging line
-	err = reusable.SessionSet(c, sessionData)
+	err = utils.SessionSet(c, sessionData)
 	if err != nil {
 		log.Printf("Failed to save session %v", err)
 		return

@@ -2,7 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Trophy from "../../../assets/animations/trophy.mp4";
 import "./result.css";
 import { useEffect } from "react";
-import { formatTime } from "../quiz/quiz";
+import { formatTime } from "../../utils/timeUtils";
 
 const ResultPage = () => {
   const location = useLocation();

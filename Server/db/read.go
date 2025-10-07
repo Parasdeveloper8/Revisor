@@ -1,7 +1,7 @@
 package db
 
 import (
-	"Revisor/reusable"
+	utils "Revisor/Utils"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -44,7 +44,7 @@ func FetchFlashCardData(connection *sql.DB, email string) ([]FlashCardData, erro
 			fmt.Printf("Failed to decode data JSON: %v\n", err)
 			return nil, err
 		}
-		formattedTime, err := reusable.Uint8ToTime(flashCD.Time)
+		formattedTime, err := utils.Uint8ToTime(flashCD.Time)
 		if err != nil {
 			fmt.Printf("Failed to convert []uint8 to time.Time : %v", err)
 		}

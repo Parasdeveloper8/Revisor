@@ -1,4 +1,4 @@
-package reusable
+package utils
 
 import (
 	"github.com/gin-contrib/sessions"
