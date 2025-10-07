@@ -116,3 +116,19 @@ h3 {
   color: #555;
   margin-bottom: 24px;
 }
+
+.timer {
+  position: fixed;
+  top: 10px;
+  right: 20px;
+  background-color: #1f1f1f;
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  letter-spacing: 0.5px;
+  font-family: "Poppins", sans-serif;
+}

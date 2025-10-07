@@ -2,6 +2,16 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "./quiz.css";
 import { useState ,useEffect} from "react";
 
+
+ // Optional: Convert seconds to mm:ss format
+  export const formatTime = (sec: number): string => {
+    const minutes = Math.floor(sec / 60);
+    const seconds = sec % 60;
+    return `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
 const QuizPage = () => {
   type QuesOpts = {
     Question: string;
@@ -19,8 +29,18 @@ const QuizPage = () => {
   const { quizData } = location.state || {};
   const [isOptionMissing,setOptionMissing] = useState<boolean>(false);
   const navigate = useNavigate();
- 
-    
+  const [seconds, setSeconds] = useState<number>(0);
+
+   // Start timer when quiz loads
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSeconds((prev) => prev + 1);
+    }, 1000);
+
+    // Cleanup when component unmounts
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
   (quizData as QuizQuesData).response.Quesopts.forEach((q: QuesOpts) => {
     if (!Array.isArray(q.Options) || q.Options.length === 0) {
@@ -87,13 +107,14 @@ const QuizPage = () => {
        method:'POST',
        credentials:'include',
        headers:{ 'Content-Type': 'application/json' },
-       body: JSON.stringify({"userAnswers":answers,"quizId":quizId})
+       body: JSON.stringify({"userAnswers":answers,"quizId":quizId,"time":seconds})
      })
        .then(response => response.json())
        .then((data)=>{
         const result = {
           Marks:data.marks,
-          TotalMarks:data["total marks"]
+          TotalMarks:data["total marks"],
+          Time:data.time
         };
             navigate('/result',{state:{result}});
        })
@@ -108,6 +129,10 @@ const QuizPage = () => {
       <button id="homeBtn" onClick={() => navigate("/")}>
         Home
       </button>
+
+     <div className="timer">
+        <h3>{formatTime(seconds)}</h3>
+      </div>
 
       <div className="quiz-container">
         <h3>Topic: {quizData.topic}</h3>

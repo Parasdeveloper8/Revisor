@@ -292,6 +292,7 @@ func EvaluateQuiz(c *gin.Context) {
 	var ReceivedData struct {
 		UserAnswers []string `json:"userAnswers"`
 		QuizID      string   `json:"quizId"`
+		Time        int      `json:"time"`
 	}
 
 	//Bind json data to ReceivedData
@@ -350,7 +351,7 @@ func EvaluateQuiz(c *gin.Context) {
 		}
 	}
 	fmt.Println(marks)
-	c.JSON(http.StatusOK, gin.H{"total marks": totalMarks, "marks": marks})
+	c.JSON(http.StatusOK, gin.H{"total marks": totalMarks, "marks": marks, "time": ReceivedData.Time})
 }
 
 // this function deletes quiz on basis of quizID given by frontend

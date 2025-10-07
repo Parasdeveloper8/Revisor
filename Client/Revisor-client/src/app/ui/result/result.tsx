@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Trophy from "../../../assets/animations/trophy.mp4";
 import "./result.css";
 import { useEffect } from "react";
+import { formatTime } from "../quiz/quiz";
 
 const ResultPage = () => {
   const location = useLocation();
@@ -11,6 +12,7 @@ const ResultPage = () => {
   type QuizResult = {
     Marks: number;
     TotalMarks: number;
+    Time:number;
   };
 
   const isValidResults =
@@ -34,6 +36,7 @@ const ResultPage = () => {
       </div>
     );
   }
+
   return (
     <>
       <button className="result-homeBtn" onClick={() => navigate("/")}>
@@ -54,6 +57,8 @@ const ResultPage = () => {
             {(result as QuizResult).Marks}/{(result as QuizResult).TotalMarks}
           </b>
         </p>
+        {/**<WebShareButton Text="My marks" Title="My marks"/>**/}
+        <p>Time taken is{" "}<b>{formatTime((result as QuizResult).Time)}</b></p>
       </div>
     </>
   );
