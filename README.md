@@ -9,7 +9,7 @@ It integrates with *Perplexity AI API* to generate practice questions, so you ca
 
 - 🔎 *Concept Lookup* – Instantly revise any topic by querying Perplexity AI.  
 - ❓ *Smart Q&A* – Generate practice questions to test your knowledge. 
-
+- ⏰ *Timer* - watch , how much time have you taken to complete.
 ---
 
 ## 🛠 Tech Stack  
