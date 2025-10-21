@@ -4,12 +4,16 @@ type notification = {
    message : string;
    anyInfo : 'success' | 'error' | 'noInfo';
 }
+
+type generatingQuiz = boolean;
 interface GlobalState {
   name: string;
   email: string;
   token: string;
   tokenExpiry: Date;
   info : notification;
+  generatingQuiz:boolean;
+  setIsGenerated:React.Dispatch<React.SetStateAction<generatingQuiz>>;
   setInfo : React.Dispatch<React.SetStateAction<notification>>;
   setUserData: React.Dispatch<React.SetStateAction<UserData>>;
 }
@@ -41,8 +45,9 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
      message:'',
      anyInfo:'noInfo'
   });
+  const [generatingQuiz,setIsGenerated] = useState<generatingQuiz>(false);
   return (
-    <GlobalContext.Provider value={{ ...userData, setUserData,info,setInfo}}>
+    <GlobalContext.Provider value={{ ...userData, setUserData,info,setInfo,generatingQuiz,setIsGenerated}}>
       {children}
     </GlobalContext.Provider>
   );

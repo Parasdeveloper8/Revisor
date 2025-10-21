@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import "./savedFlashCard.css";
 import Loader from "../loader/loader";
+import {useGlobalContext} from "../../context/GlobalContext";
+import {generateQuiz} from "../../utils/quizUtils";
 import { useNavigate } from "react-router-dom";
+
 // type to hold each flashcard item
 type FlashCardItem = {
   Email: string;
@@ -20,47 +23,11 @@ type FlashCardApiResponse = {
  flashCardData: FlashCardItem[];
 };
 
-
-//type to hold /generate/quiz response data
-type QuizQuesData = {
-  response: {
-    QuizId: string;
-    Quesopts: {
-      Question: string;
-      Options: string[];
-    }[];
-  };
-  topic: string;
-}
-
 const SavedFlashCards = () => {
   const [flashCardItems, setFlashCardItems] = useState<FlashCardItem[]>([]);
   const [fetched,setFetched] = useState<boolean>(false);
-  const [generatingQuiz,setIsGenerated] = useState<boolean>(false);
-  const navigate = useNavigate();
-  //This function sends data which has to be converted into quiz to backend
-const generateQuiz = (topicName:FlashCardItem["TopicName"],data:FlashCardItem["Data"],noteId:FlashCardItem["Uid"])=>{
-      setIsGenerated(true);
-     const api:string = "http://localhost:8080/generate/quiz";
-     fetch(api,{
-      method:'POST',
-      credentials:'include',
-      headers:{ 'Content-Type': 'application/json' },
-      body:JSON.stringify({"topicName":topicName,"data":data,"noteId":noteId}),
-     })
-     .then(response=>response.json())
-     .then((data :QuizQuesData) => {
-          console.log(data);
-          setIsGenerated(false);
-          //move user to separate quiz page
-          navigate('/quiz',{state:{quizData:data}});
-     })
-     .catch((error) => {
-            console.error("Failed to make post request to /generate/quiz: ",error);
-            setIsGenerated(false);
-         })
-}
-
+  const {generatingQuiz,setIsGenerated} = useGlobalContext();
+   const navigate = useNavigate();
   // Fetch all saved flashcards' data
   useEffect(() => {
     fetch("http://localhost:8080/flashcard/get/data", {
@@ -106,7 +73,7 @@ const generateQuiz = (topicName:FlashCardItem["TopicName"],data:FlashCardItem["D
         <button
       className="generate-btn"
       key={index}
-      onClick={()=>generateQuiz(item.TopicName,item.Data,item.Uid)}
+      onClick={()=>generateQuiz(item.TopicName,item.Data,item.Uid,navigate,setIsGenerated)}
     >
       Generate Quiz
     </button>
