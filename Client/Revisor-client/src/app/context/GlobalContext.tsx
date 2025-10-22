@@ -6,6 +6,16 @@ type notification = {
 }
 
 type generatingQuiz = boolean;
+
+//data of flashcard whose quiz is going to be generated
+type currentFlashCardData = {
+     TopicName: string;
+     Data: {
+       Heading: string;
+       Value: string;
+    }[];
+      Uid : string;
+}
 interface GlobalState {
   name: string;
   email: string;
@@ -13,6 +23,8 @@ interface GlobalState {
   tokenExpiry: Date;
   info : notification;
   generatingQuiz:boolean;
+  currentFlashCardData:currentFlashCardData;
+  setCurrentFlashCData:React.Dispatch<React.SetStateAction<currentFlashCardData>>;
   setIsGenerated:React.Dispatch<React.SetStateAction<generatingQuiz>>;
   setInfo : React.Dispatch<React.SetStateAction<notification>>;
   setUserData: React.Dispatch<React.SetStateAction<UserData>>;
@@ -46,8 +58,13 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
      anyInfo:'noInfo'
   });
   const [generatingQuiz,setIsGenerated] = useState<generatingQuiz>(false);
+  const [currentFlashCardData,setCurrentFlashCData] = useState<currentFlashCardData>({
+    TopicName:'',
+    Data:[{Heading:'', Value:''}],
+    Uid:''
+  });
   return (
-    <GlobalContext.Provider value={{ ...userData, setUserData,info,setInfo,generatingQuiz,setIsGenerated}}>
+    <GlobalContext.Provider value={{ ...userData, setUserData,info,setInfo,generatingQuiz,setIsGenerated,currentFlashCardData,setCurrentFlashCData}}>
       {children}
     </GlobalContext.Provider>
   );

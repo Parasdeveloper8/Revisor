@@ -2,7 +2,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "./quiz.css";
 import { useState ,useEffect} from "react";
 import { formatTime} from "../../utils/timeUtils";
-
+import {useGlobalContext} from "../../context/GlobalContext";
+import { generateQuiz } from "../../utils/quizUtils";
 const QuizPage = () => {
   type QuesOpts = {
     Question: string;
@@ -21,7 +22,7 @@ const QuizPage = () => {
   const [isOptionMissing,setOptionMissing] = useState<boolean>(false);
   const navigate = useNavigate();
   const [seconds, setSeconds] = useState<number>(0);
-
+  const {setCurrentFlashCData,currentFlashCardData,setIsGenerated} = useGlobalContext();
    // Start timer when quiz loads
   useEffect(() => {
     const interval = setInterval(() => {
@@ -36,23 +37,61 @@ const QuizPage = () => {
   (quizData as QuizQuesData).response.Quesopts.forEach((q: QuesOpts) => {
     if (!Array.isArray(q.Options) || q.Options.length === 0) {
       setOptionMissing(true);
-    }
+      }
   });
    }, [quizData]);
 
-  // Check if quizData and required fields are valid
+   //send request to server to delete existing quiz belonging to current quizID
+  useEffect(()=>{
+    if(isOptionMissing){
+      const deleteQuiz = () =>{
+      const api = "http://localhost:8080/delete/quiz";
+       fetch(api,{
+       method:'DELETE',
+       credentials:'include',
+       headers:{ 'Content-Type': 'application/json' },
+       body: JSON.stringify({"quizId":(quizData as QuizQuesData).response.QuizId})
+     }).then(response => {
+      if(response.ok){
+        console.log(`Quiz[${(quizData as QuizQuesData).response.QuizId}] is deleted`);
+        setOptionMissing(false);
+        //generate new quiz
+        generateQuiz(currentFlashCardData.TopicName,currentFlashCardData.Data,currentFlashCardData.Uid,navigate,setIsGenerated)
+        console.log("New Quiz generated");
+      }else{
+        console.error("Error in deleting quiz");
+        setOptionMissing(true);
+      }
+     })
+     .catch(error =>{
+            console.error("Failed to make request to  /delete/quiz: ",error);
+            setOptionMissing(true);
+          })
+  }
+  deleteQuiz();
+}
+  },[currentFlashCardData,isOptionMissing,navigate,quizData,setIsGenerated]);
+
+   // Check if quizData and required fields are valid
   const isValidQuizData =
     quizData &&
     quizData.response &&
     Array.isArray(quizData.response.Quesopts) &&
     quizData.response.Quesopts.length > 0;
+    
+  //remove current flashcard data
+  useEffect(() => {
+  if (isValidQuizData) {
+    setCurrentFlashCData({ TopicName: '', Data: [{ Heading: '', Value: '' }], Uid: '' });
+  }
+}, [isValidQuizData,setCurrentFlashCData]);
 
   const [answers, setAnswers] = useState<(string | null)[]>(
     isValidQuizData
       ? Array(quizData.response.Quesopts.length).fill(null)
       : []
   );
-
+  
   const handleOptionSelect = (qIndex: number, option: string) => {
     const updatedAnswers = [...answers];
     updatedAnswers[qIndex] = option;
@@ -68,30 +107,7 @@ const QuizPage = () => {
       </div>
     );
   }
-
-  //send request to server to delete existing quiz belonging to current quizID
-  const deleteQuiz = () =>{
-      const api = "http://localhost:8080/delete/quiz";
-       fetch(api,{
-       method:'DELETE',
-       credentials:'include',
-       headers:{ 'Content-Type': 'application/json' },
-       body: JSON.stringify({"quizId":(quizData as QuizQuesData).response.QuizId})
-     }).then(response => {
-      if(response.ok){
-        console.log(`Quiz[${(quizData as QuizQuesData).response.QuizId}] is deleted`);
-        setOptionMissing(false);
-      }else{
-        console.error("Error in deleting quiz");
-        setOptionMissing(true);
-      }
-     })
-     .catch(error =>{
-            console.error("Failed to make request to  /delete/quiz: ",error);
-            setOptionMissing(true);
-          })
-  }
-  if(isOptionMissing) deleteQuiz();
+  
   const evaluateMarks = (quizId:string) =>{
      const api = "http://localhost:8080/evaluate/quiz";
      fetch(api,{
@@ -149,7 +165,7 @@ const QuizPage = () => {
                       />
                       <span>{opt}</span>
                     </label>
-                  ))
+                  )) 
                 ) : (
                   <p>It's not you, it's us. Try it again.</p>
                 )

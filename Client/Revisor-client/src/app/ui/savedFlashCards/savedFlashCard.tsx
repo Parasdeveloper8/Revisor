@@ -4,19 +4,7 @@ import Loader from "../loader/loader";
 import {useGlobalContext} from "../../context/GlobalContext";
 import {generateQuiz} from "../../utils/quizUtils";
 import { useNavigate } from "react-router-dom";
-
-// type to hold each flashcard item
-type FlashCardItem = {
-  Email: string;
-  TopicName: string;
-  Time: string;
-  FormattedTime: string;
-  Data: {
-    Heading: string;
-    Value: string;
-  }[];
-  Uid : string;
-};
+import type {FlashCardItem} from "../../../types/quiz";
 
 // full API response
 type FlashCardApiResponse = {
@@ -26,7 +14,7 @@ type FlashCardApiResponse = {
 const SavedFlashCards = () => {
   const [flashCardItems, setFlashCardItems] = useState<FlashCardItem[]>([]);
   const [fetched,setFetched] = useState<boolean>(false);
-  const {generatingQuiz,setIsGenerated} = useGlobalContext();
+  const {generatingQuiz,setIsGenerated,setCurrentFlashCData} = useGlobalContext();
    const navigate = useNavigate();
   // Fetch all saved flashcards' data
   useEffect(() => {
@@ -73,7 +61,15 @@ const SavedFlashCards = () => {
         <button
       className="generate-btn"
       key={index}
-      onClick={()=>generateQuiz(item.TopicName,item.Data,item.Uid,navigate,setIsGenerated)}
+      onClick={()=>{
+        generateQuiz(item.TopicName,item.Data,item.Uid,navigate,setIsGenerated);
+        setCurrentFlashCData({
+          TopicName:item.TopicName,
+          Data:item.Data,
+          Uid:item.Uid
+        });
+      }
+      }
     >
       Generate Quiz
     </button>

@@ -1,25 +1,13 @@
  import {type NavigateFunction } from "react-router-dom";
-
-// type to hold each flashcard item
-  type FlashCardItem = {
-     Email: string;
-     TopicName: string;
-     Time: string;
-     FormattedTime: string;
-     Data: {
-         Heading: string;
-         Value: string;
-       }[];
-       Uid : string;
-     };
+ import type {FlashCardItem} from "../../types/quiz";
 
   //This function sends data which has to be converted into quiz to backend
 export const generateQuiz = (
   topicName:FlashCardItem["TopicName"], data:FlashCardItem["Data"], noteId:FlashCardItem["Uid"],
   navigate:NavigateFunction, setIsGenerated: React.Dispatch<React.SetStateAction<boolean>>,
        )=>{
-      //type to hold /generate/quiz response data
-      type QuizQuesData = {
+       //type to hold /generate/quiz response data
+        type QuizQuesData = {
          response: {
           QuizId: string;
             Quesopts: {
@@ -29,8 +17,7 @@ export const generateQuiz = (
             };
          topic: string;
        }
-      
-      setIsGenerated(true);
+     setIsGenerated(true);
      const api:string = "http://localhost:8080/generate/quiz";
      fetch(api,{
       method:'POST',

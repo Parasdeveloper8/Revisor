@@ -214,7 +214,7 @@ func GenerateQuiz(c *gin.Context) {
 		//Split by right answer
 		re := regexp.MustCompile(`Right answer is`)
 		npart := re.Split(part, -1)
-		fmt.Printf("Npart : %v\n", npart)
+		//fmt.Printf("Npart : %v\n", npart)
 		if len(npart) < 2 {
 			log.Printf("Skipping part because no answer found: %s\n", part)
 			continue
@@ -358,15 +358,17 @@ func EvaluateQuiz(c *gin.Context) {
 func DeleteQuiz(c *gin.Context) {
 	//create a db connection
 	conn := db.GetDB()
-	var quizID string
+	var ReceivedData struct {
+		QuizId string `json:"quizId"`
+	}
 	//Bind json data to quizID
-	err := c.ShouldBindJSON(&quizID)
+	err := c.ShouldBindJSON(&ReceivedData)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No JSON data provided"})
 		log.Printf("No JSON data provided %v\n", err)
 		return
 	}
-	err = db.DeleteQuiz(quizID, conn)
+	err = db.DeleteQuiz(ReceivedData.QuizId, conn)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete quiz"})
 		log.Printf("Failed to delete quiz %v\n", err)
